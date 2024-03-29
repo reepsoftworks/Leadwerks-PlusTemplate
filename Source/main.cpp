@@ -8,20 +8,35 @@ bool EventCallback(const Event& e, Object* extra)
     {
         Print("Event::WindowMove");
     }
+    else if (e.id == Event::TimerTick)
+    {
+        Print("Tick");
+    }
 
     return true;
 }
 
 int main(int argc, const char argv[])
 {
-    Leadwerks::Window* mainWindow = Leadwerks::Window::Create("Leadwerks", 0, 0, 1280, 720, Window::Titlebar | Window::Center);
-    OS::SetWindowTitlebarTheme(mainWindow, OS::ThemeDark);
-    OS::SetWindowIcon(mainWindow);
-    Leadwerks::Context* currContext = Leadwerks::Context::Create(mainWindow);
-    Leadwerks::World* world = Leadwerks::World::Create();
-    Leadwerks::Camera* camera = Leadwerks::Camera::Create();
+    Leadwerks::Window* window = Leadwerks::Window::Create("Leadwerks", 0, 0, 1280, 720, Window::Titlebar | Window::Center);
+    OS::SetWindowTitlebarTheme(window, OS::ThemeDark);
+    OS::SetWindowIcon(window);
+    Leadwerks::Context* currContext = Leadwerks::Context::Create(window);
+    auto gui = Leadwerks::GUI::Create(currContext);
 
-    ListenEvent(Event::WindowMove, mainWindow, EventCallback);
+    auto world = World::Create();
+    auto camera = Camera::Create();
+    camera->SetClearColor(0.125f);
+    camera->SetPosition(0, 0, -3);
+    Settings::Apply(camera);
+
+    auto light = DirectionalLight::Create();
+    light->Turn(45, 35, 0);
+
+    auto model = Model::Box();
+
+    auto timer = Timer::Create(2000);
+    ListenEvent(Event::TimerTick, timer, EventCallback);
 
     bool running = true;
     while (running)
@@ -29,7 +44,6 @@ int main(int argc, const char argv[])
         while (PeekEvent())
         {
             const auto e = WaitEvent();
-            //Print(e.id);
             if (e.id == Event::WindowClose)
             {
                 Print("Window Close");
@@ -42,7 +56,30 @@ int main(int argc, const char argv[])
             }
         }
 
-        if (mainWindow->KeyHit(Key::Escape)) mainWindow->Close();
+        if (window->KeyHit(Key::Escape)) window->Close();
+
+        static bool fullscreen = false;
+        if (window->KeyHit(Key::Space))
+        {
+            currContext->Release();
+            window->Release();
+
+            if (!fullscreen)
+            {
+                window = Leadwerks::Window::Create("Leadwerks", 0, 0, 1920, 1080, Window::FullScreen);
+                currContext = Leadwerks::Context::Create(window);
+            }
+            else
+            {
+                window = Leadwerks::Window::Create("Leadwerks", 0, 0, 1280, 720, Window::Titlebar | Window::Center);
+                currContext = Leadwerks::Context::Create(window);
+            }
+
+            gui->window = window;
+            gui->context = currContext;
+
+            fullscreen = !fullscreen;
+        }
 
         UpdateTime();
         world->Update();

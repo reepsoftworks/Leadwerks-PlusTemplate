@@ -23,6 +23,30 @@ namespace Leadwerks
 		FILETYPE_DIR,
 	};
 
+	enum CVarType
+	{
+		CVAR_DEFAULT,
+		CVAR_SAVE,
+		CVAR_HIDDEN,
+		CVAR_CHEAT
+	};
+
+	enum Setting
+	{
+		SETTING_DISABLED = 0,
+		SETTING_LOW,
+		SETTING_MEDIUM,
+		SETTING_HIGH,
+		SETTING_ULTRA
+	};
+
+	// LeadwerksPlus Callback
+	enum
+	{
+		CALLBACK_CHEATSENABLED,
+		CALLBACK_UPDATE
+	};
+
 	// LeadwerksPlus EventIDs
 	enum
 	{

@@ -120,4 +120,46 @@ namespace Leadwerks
 	{
 		if (o) o = NULL;
 	}
+
+	bool ExecuteCommand(const std::string& input, const bool quiet)
+	{
+		if (input.empty()) return false;
+
+		Tokenizer tokenizer(input, true);
+		std::string m_Name;
+
+		if (tokenizer.m_Tokens.empty()) 
+		{
+			m_Name = String::Lower(input);
+			m_Name = String::Trim(m_Name);
+		}
+		else { m_Name = String::Lower(tokenizer.m_First); }
+
+		bool ret = false;
+
+		if (ConCommand::Find(m_Name))
+		{
+			auto cmd = (*ConCommand::GetCommands())[m_Name];
+			ret = cmd.FireCallback(tokenizer);
+		}
+		else
+		{
+			if (ConVar::Find(m_Name))
+			{
+				auto cmd = (*ConVar::GetConVars())[m_Name];
+				if (cmd && !tokenizer.m_Tokens.empty())
+				{
+					auto value = tokenizer.m_Tokens[0];
+					cmd->SetValue(value);
+					if (!quiet) Print("ConVar \"" + m_Name + "\" has been set to the value of \"" + cmd->GetValue() + "\"...");
+				}
+
+				ret = true;
+			}
+
+			if (!ret && !quiet) Print("Error: Failed to locate existant convar or command \"" + m_Name + "\"...");
+		}
+
+		return ret;
+	}
 }

@@ -45,3 +45,7 @@ backup/**
 
 # Exclude tools
 !Tools/
+
+# Exclude untested things!
+Source/Patch/Classes/GamePad.cpp
+Source/Patch/Classes/GamePad.h

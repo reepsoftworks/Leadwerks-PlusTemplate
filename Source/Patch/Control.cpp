@@ -32,6 +32,9 @@ namespace Leadwerks
 				time__ = newtime - starttime__;//+= elapsed;
 				speed__ = float(speed__ * speedsmoothing) + ((1.0 - speedsmoothing) * (elapsed / frametime));//lerp to smooth speed value
 				systemtime__ = newtime;
+
+				// Fire callback
+				FireCallback(CALLBACK_UPDATE, NULL, NULL);
 			}
 		}
 	}
@@ -40,11 +43,10 @@ namespace Leadwerks
 	//std::multimap<const int, std::function<void(Event, Object*)>> eventcallbacks;
 	struct EventListener
 	{
-		uint64_t order = -1;
 		int id = -1;
 		Object* source = NULL;
-		std::function<void(Event, Object*)> callback;
 		Object* extra = NULL;
+		std::function<void(Event, Object*)> callback;
 	};
 	std::vector<EventListener> eventlisteners;
 
@@ -67,9 +69,20 @@ namespace Leadwerks
 			for (const auto& l : eventlisteners)
 			{
 				auto listener = l;
-				if (e.id == listener.id && e.source == listener.source)
+				if (listener.id == 0)
 				{
-					listener.callback(listener.id, listener.extra);
+					listener.callback(e.id, e.extra);
+				}
+				else
+				{
+					if (e.source != NULL)
+					{
+						if (e.source == listener.source) listener.callback(listener.id, listener.extra);
+					}
+					else
+					{
+						listener.callback(listener.id, listener.extra);
+					}
 				}
 			}
 		}
@@ -95,7 +108,6 @@ namespace Leadwerks
 	void ListenEvent(const int id, Object* source, std::function<void(Event, Object*)> func, Object* extra)
 	{
 		auto listener = EventListener();
-		listener.order = (uint64_t)eventlisteners.size();
 		listener.id = id;
 		listener.source = source;
 		listener.extra = extra;

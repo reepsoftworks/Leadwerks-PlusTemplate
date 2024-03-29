@@ -44,7 +44,9 @@ namespace Leadwerks
 	void FreeObject(shared_ptr<SmartObject> o);
 
 	template <class T>
-	T* CastObject(Object* o) { return dynamic_cast<T>(o); }
+	T* CastObject(Object* o) { return dynamic_cast<T*>(o); }
+
+	extern bool ExecuteCommand(const std::string& input, const bool quiet = false);
 }
 
 //Includes
@@ -59,3 +61,8 @@ namespace Leadwerks
 #include "Classes/FileStream.h"
 #include "Classes/JSON.h"
 //#include "Classes/GamePad.h"
+#include "Classes/Tokenizer.h"
+#include "Classes/ConCommand.h"
+#include "Classes/CVar.h"
+#include "Classes/Settings.h"
+#include "Classes/Timer.h"
