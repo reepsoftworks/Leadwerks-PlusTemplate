@@ -48,11 +48,6 @@ namespace App
             }
             Activate();
         }
-        else if (e.id == Event::WindowClose && e.source == window_ptr)
-        {
-            window_ptr->Hide();
-            EmitEvent(Event::WindowClose, this);
-        }
 
         return true;
     }
@@ -251,7 +246,7 @@ namespace App
     }
 
     static Vec2 rawmouseaxis = Vec2(0);
-    Vec2 GraphicsWindow::GetMouseAxis(const float dpi = 1000)
+    Vec2 GraphicsWindow::GetMouseAxis(const float dpi)
     {
         Vec2 t = Vec2(0);
         t.x = rawmouseaxis.x / dpi;
@@ -260,7 +255,6 @@ namespace App
     }
 
 #if defined (_WIN32)
-
     LRESULT CALLBACK GfxWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     {
         int button = 0;
@@ -383,6 +377,14 @@ namespace App
             EventQueue::Emit(Event::MouseUp, window, button, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             break;
         }
+        case WM_MOUSELEAVE:
+            EventQueue::Emit(Event::MouseLeave, window, 0, LOWORD(lparam), HIWORD(lparam));
+            break;
+
+        case WM_MOUSEMOVE:
+            EventQueue::Emit(Event::MouseMove, window, 0, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+            break;
+
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
             EventQueue::Emit(Event::KeyDown, window, wparam);
