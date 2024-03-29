@@ -1,0 +1,47 @@
+# This .gitignore is optimized for Leadwerks Projects and is intended to be copied and modified to fit the needs of the project of it's apart of.
+
+# Visual Studio/Code:
+.vscode/**
+.vs/**
+x64/**
+*.exp
+*.pdb
+*.BuildCppClean.log
+**.recipe
+**.FileListAbsolute.txt
+*.ilk
+*.log
+*.tlog
+*.idb
+*.vcxproj.user
+
+# XCode:
+.DS_Store
+_.DS_Store
+**/.DS_Store
+**/_.DS_Store
+Build/**
+*.dSYM
+*.plist
+*.xcactivitylog
+*.index**
+
+# Executables:
+*.exe
+*.out
+*.app
+
+# Backup folder:
+backup/**
+
+# Game Packages:
+*.zip
+*.pak
+
+# Compressed backups:
+*.7z
+*.rar
+*.tar.gz
+
+# Exclude tools
+!Tools/
