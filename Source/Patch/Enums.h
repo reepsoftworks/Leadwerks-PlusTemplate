@@ -43,13 +43,14 @@ namespace Leadwerks
 	// LeadwerksPlus Callback
 	enum
 	{
+		CALLBACK_UPDATE,
 		CALLBACK_CHEATSENABLED,
-		CALLBACK_UPDATE
 	};
 
 	// LeadwerksPlus EventIDs
 	enum
 	{
-		EVENT_STARTRENDERER = 10001
+		EVENT_NONE = 0,
+		EVENT_STARTRENDERER = 10000
 	};
 }

@@ -50,6 +50,26 @@ namespace Leadwerks
 		//}
 	}
 
+	void RemoveCallback(Object* source)
+	{
+		if (!rawcallbacks.empty())
+		{
+			for (const auto& cb : rawcallbacks)
+			{
+				auto s = cb.source;
+				if (s = source)
+				{
+					rawcallbacks.erase(
+						std::remove_if(rawcallbacks.begin(), rawcallbacks.end(), [&](Callback const& pet) {
+							return cb.source == source;
+							}),
+						rawcallbacks.end());
+					break;
+				}
+			}
+		}
+	}
+
 	void SetCallback(const int id, std::function<void(std::shared_ptr<SmartObject>, std::shared_ptr<SmartObject>)> func)
 	{
 		//callbacks.insert(pair<const int, std::function<void(std::shared_ptr<SmartObject>, std::shared_ptr<SmartObject>)>>(id, func));

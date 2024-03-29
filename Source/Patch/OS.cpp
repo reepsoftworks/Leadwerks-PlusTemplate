@@ -3,6 +3,8 @@
 
 #ifdef _WIN32
 #include "dwmapi.h"
+#include "shellscalingapi.h"
+#include <VersionHelpers.h>
 #endif
 
 namespace Leadwerks
@@ -370,6 +372,37 @@ namespace Leadwerks
 #endif
 	}
 
+	// Convert UINT to float in the range [0, 1]
+	static float ConvertToNormalizedFloat(UINT value, UINT maxValue)
+	{
+		// Ensure maxValue is not zero to avoid division by zero
+		if (maxValue == 0) {
+			return 0.0f;
+		}
+
+		// Normalize the value to [0, 1]
+		float normalizedValue = static_cast<float>(value) / static_cast<float>(maxValue);
+
+		// Scale to the desired range (e.g., [0, 1])
+		return normalizedValue;
+	}
+
+	iVec2 OS::GetDisplaySize()
+	{
+		return System::GetGraphicsMode(System::CountGraphicsModes() - 1);
+	}
+
+	float OS::GetDisplayScale()
+	{
+		return System::DPIScaling;
+	}
+
+	std::vector<iVec2> OS::GetDisplayModes()
+	{
+		System::CountGraphicsModes();
+		return System::graphicsmodes;
+	}
+
 	bool OS::SetWindowTitlebarTheme(Leadwerks::Window* source, const int theme)
 	{
 #if defined (_WIN32)
@@ -411,6 +444,31 @@ namespace Leadwerks
 		std::string platform = "Unknown";
 #ifdef _WIN32 
 		platform = "Windows";
+		if (IsWindows10OrGreater()) 
+		{
+			platform = platform + " 10+";
+		}
+		if (IsWindows8Point1OrGreater()) 
+		{
+			platform = platform + " 8.1";
+		}
+		else if (IsWindows8OrGreater()) 
+		{
+			platform = platform + " 8";
+		}
+		else if (IsWindows7OrGreater()) 
+		{
+			platform = platform + " 7";
+		}
+		else if (IsWindowsVistaOrGreater()) 
+		{
+			platform = platform + " Vista";
+		}
+		else if (IsWindowsXPOrGreater()) 
+		{
+			platform = platform + " XP";
+		}
+
 #elif __APPLE__
 		platform = "Apple";
 #elif __linux__

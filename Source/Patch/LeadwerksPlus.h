@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef _WIN32
+#pragma comment (lib, "shcore.lib")
 #pragma comment (lib, "Dwmapi.lib")
 #endif
 
@@ -66,3 +67,4 @@ namespace Leadwerks
 #include "Classes/CVar.h"
 #include "Classes/Settings.h"
 #include "Classes/Timer.h"
+#include "Classes/SplashWindow.h"

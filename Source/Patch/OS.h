@@ -3,6 +3,8 @@
 
 namespace Leadwerks
 {
+	class Display;
+
 	class OS
 	{
 	public:
@@ -42,6 +44,9 @@ namespace Leadwerks
 		static std::string GetSystemEnvironment(const std::string& env);
 		static std::wstring GetSystemEnvironmentW(const std::string& env);
 		static bool LightThemeEnabled();
+		static iVec2 GetDisplaySize();
+		static float GetDisplayScale();
+		static std::vector<iVec2> GetDisplayModes();
 		static bool SetWindowTitlebarTheme(Leadwerks::Window* source, const int theme);
 		static bool SetWindowIcon(Leadwerks::Window* source, const int id = 101);
 

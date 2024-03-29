@@ -43,7 +43,7 @@ namespace Leadwerks
 	//std::multimap<const int, std::function<void(Event, Object*)>> eventcallbacks;
 	struct EventListener
 	{
-		int id = -1;
+		int id = EVENT_NONE;
 		Object* source = NULL;
 		Object* extra = NULL;
 		std::function<void(Event, Object*)> callback;
@@ -68,22 +68,7 @@ namespace Leadwerks
 		{
 			for (const auto& l : eventlisteners)
 			{
-				auto listener = l;
-				if (listener.id == 0)
-				{
-					listener.callback(e.id, e.extra);
-				}
-				else
-				{
-					if (e.source != NULL)
-					{
-						if (e.source == listener.source) listener.callback(listener.id, listener.extra);
-					}
-					else
-					{
-						listener.callback(listener.id, listener.extra);
-					}
-				}
+				l.callback(e, l.extra);
 			}
 		}
 	}
