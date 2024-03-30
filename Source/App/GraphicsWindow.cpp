@@ -58,11 +58,18 @@ namespace App
         window_ptr = NULL;
         framebuffer = NULL;
         ui = NULL;
+        imgui = NULL;
         splash = NULL;
 	}
 
 	GraphicsWindow::~GraphicsWindow()
 	{
+        if (imgui != NULL)
+        {
+            imgui->Release();
+            imgui = NULL;
+        }
+
         if (framebuffer != NULL)
         {
             framebuffer->Release();
@@ -88,6 +95,14 @@ namespace App
         {
             window_ptr->ShowMouse();
         }
+
+        if (ui != NULL)
+        {
+            ui->Release();
+            ui = NULL;
+        }
+
+        if (imgui != NULL) imgui->SetContext(NULL);
 
         if (framebuffer != NULL)
         {
@@ -131,8 +146,22 @@ namespace App
             break;
         }
 
-        // TODO: Set the title depending on app mode.
-        title = title;
+        if (GetAppMode() == MODE_DEBUG)
+        {
+            std::string debugtag = " - [Debug]"; // 10;
+            if (String::Right(title, (int)debugtag.length()) != debugtag)
+            {
+                title = title + debugtag;
+            }
+            else
+            {
+                title = title;
+            }
+        }
+        else
+        {
+            title = title;
+        }
 
         window_ptr = Window::Create(title, 0, 0, final_windowsize.x, final_windowsize.y, window_style);
         window_ptr->Hide();
@@ -143,10 +172,17 @@ namespace App
         framebuffer = Framebuffer::Create(window_ptr);
         Debug::Assert(framebuffer != NULL, "Failed to create framebuffer!");
 
-        //if (ui == NULL) ui = Interface::Create(framebuffer);
-        //Debug::Assert(ui != NULL, "Failed to create Interface!");
-        //ui->window = window_ptr;
-        //ui->context = framebuffer;
+        if (imgui == NULL) imgui = ImGuiLayer::Create();
+        Debug::Assert(imgui != NULL, "Failed to create imgui!");
+        imgui->SetContext(framebuffer);
+
+        if (ui == NULL) ui = Interface::Create(framebuffer);
+        Debug::Assert(ui != NULL, "Failed to create Interface!");
+        ui->SetScale(OS::GetDisplayScale());
+        ui->GetBase()->SetScript("Scripts/GUI/Panel.lua");
+
+        // Make this invisable.
+        ui->GetBase()->CallFunction("SetColor", 0.0f, 0.0f, 0.0f, 0.0f, 0);
 
         if (firstwindow)
         {
@@ -407,9 +443,19 @@ namespace App
             break;
         }
 
+#ifdef IMGUI_API
+        ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam);
+#endif
         return Leadwerks::WndProc(hwnd, message, wparam, lparam);
     }
 #endif
+
+    void GraphicsWindow::Sync(const bool sync, const float framerate)
+    {
+        window_ptr->Update();
+        if (imgui) imgui->EndFrame();
+        UpdateRender(framebuffer, sync, framerate);
+    }
 
     GraphicsWindow* GraphicsWindow::current = NULL;
     GraphicsWindow* GraphicsWindow::GetCurrent()
@@ -423,13 +469,25 @@ namespace App
         return framebuffer;
     }
 
-    GraphicsWindow* GraphicsWindow::Create(const std::string& title, const GraphicWindowSettings& settings, const bool showonready)
+    Leadwerks::ImGuiLayer* GraphicsWindow::GetImGui()
+    {
+        return imgui;
+    }
+
+    Leadwerks::Interface* GraphicsWindow::GetInterface()
+    {
+        return ui;
+    }
+
+    GraphicsWindow* GraphicsWindow::Create(const std::string& title, const GraphicWindowSettings& settings, Leadwerks::SplashWindow* splashwindow)
     {
         if (!current)
         {
             current = new GraphicsWindow();
             current->title = title;
-            current->showonready = showonready;
+
+            current->splash = splashwindow;
+            current->showonready = (bool)current->splash == NULL;
 
             if (current->Initialize(settings))
             {

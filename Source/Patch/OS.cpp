@@ -53,6 +53,12 @@ namespace Leadwerks
 #endif
 	}
 
+	std::map<std::string, std::string> OS::ParseCommandLine(int argc, const char* argv[])
+	{
+		System::ParseCommandLine(argc, argv);
+		return System::Arguments;
+	}
+
 	int OS::Message(const std::string& title, const std::string& message)
 	{
 #if defined (_WIN32)
@@ -394,7 +400,16 @@ namespace Leadwerks
 
 	float OS::GetDisplayScale()
 	{
-		return System::DPIScaling;
+		float scale = System::DPIScaling;
+		HMONITOR hMonitor = MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
+		UINT dpiX, dpiY;
+		HRESULT hr = GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
+		if (SUCCEEDED(hr)) 
+		{
+			scale = ConvertToNormalizedFloat(dpiX, 96);
+		}
+		return scale;
+		//return System::DPIScaling;
 	}
 
 	std::vector<iVec2> OS::GetDisplayModes()

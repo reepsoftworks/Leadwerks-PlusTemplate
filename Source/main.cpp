@@ -17,11 +17,12 @@ bool EventCallback(const Event& e, Object* extra)
     return true;
 }
 
-int main(int argc, const char argv[])
+int main(int argc, const char* argv[])
 {
+    ParseArguments(argc, argv);
+
     GraphicWindowSettings windowsettings;
-    auto window = GraphicsWindow::Create("Leadwerks", windowsettings, false);
-    window->splash = SplashWindow::Create(L"splashscreen.bmp");
+    auto window = GraphicsWindow::Create("Leadwerks", windowsettings, SplashWindow::Create(L"splashscreen.bmp"));
 
     // World
     auto world = World::Create();
@@ -79,11 +80,30 @@ int main(int argc, const char argv[])
 
         model->Turn(0, 1.0f * Time::GetSpeed(), 0);
 
+        // Test ImGUI
+        if (window->GetImGui()->StartFrame())
+        {
+            bool show_demo_window = true;
+            //if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
+
+            const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y), ImGuiCond_None);
+            ImGui::SetNextWindowSize(ImVec2(200, 200));
+
+            if (!ImGui::Begin("Dear ImGui Demo", &show_demo_window, /*ImGuiWindowFlags_NoBackground |*/ ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+            {
+            }
+
+            ImGui::Text("Hello world!");
+            ImGui::End();
+        }
+
         // World
         UpdateTime();
         world->Update();
         world->Render();
-        UpdateRender(window->GetFramebuffer());
+
+        window->Sync();
     }
 
     return true;

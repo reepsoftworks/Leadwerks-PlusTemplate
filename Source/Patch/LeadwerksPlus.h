@@ -19,6 +19,13 @@
 #include "Libraries/tableplusplus/tableplusplus.h"
 using namespace tableplusplus;
 
+// imgui
+#include "Libraries/imgui/include/imconfig.h"
+#include "Libraries/imgui/include/imgui.h"
+#include "Libraries/imgui/include/imgui_impl_opengl3.h"
+//#include "Libraries/imgui/include/imgui_impl_opengl3_loader.h"
+#include "Libraries/imgui/include/imgui_impl_win32.h"
+
 namespace Leadwerks
 {
 	class SmartObject;
@@ -68,3 +75,4 @@ namespace Leadwerks
 #include "Classes/Settings.h"
 #include "Classes/Timer.h"
 #include "Classes/SplashWindow.h"
+#include "Classes/ImGuiLayer.h"

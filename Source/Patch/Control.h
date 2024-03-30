@@ -14,5 +14,6 @@ namespace Leadwerks
 	extern void ListenEvent(const int id, Object* source, std::function<void(Event, Object*)> func, Object* extra = NULL);
 
 	// Framebuffer
-	void UpdateRender(Framebuffer* framebuffer, const bool sync = false, const float framerate = 0.0f);
+	extern void UpdateRender(Framebuffer* framebuffer, const bool sync = false, const float framerate = 0.0f);
+
 }

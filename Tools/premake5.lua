@@ -44,7 +44,10 @@ workspace "LeadwerksTest"
         {
             -- Steamworks (TODO: Update path)
             "%{LeadwerksPath}/Include/Libraries/steamworks/public/steam",
-            "%{SourceDir}/Patch/Include/Libraries/steamworks/public/steam",
+            --"%{SourceDir}/Patch/Libraries/steamworks/public/steam",
+
+            -- Imgui
+            "%{SourceDir}/Patch/Libraries/imgui/include",
 
             -- Leadwerks Game Engine
             "%{LeadwerksPath}/Include",
@@ -124,6 +127,9 @@ workspace "LeadwerksTest"
         { 
             -- Steamworks
             --"%{SourceDir}/Patch/Library/Windows/x86",
+
+            -- imgui
+            "%{SourceDir}/Patch/Libraries/imgui/lib",
 
             -- Leadwerks Game Engine
             "%{LeadwerksPath}/Library/Windows/x86"
@@ -213,6 +219,9 @@ workspace "LeadwerksTest"
 
         links 
         {
+            -- imgui
+            "imgui_d.lib",
+
             "newton_d.lib",
             "dContainers_d.lib",
             "dCustomJoints_d.lib"
@@ -231,6 +240,9 @@ workspace "LeadwerksTest"
 
         links 
         {
+            -- imgui
+            "imgui.lib",
+
 			"newton.lib",
 			"dContainers.lib",
 			"dCustomJoints.lib"

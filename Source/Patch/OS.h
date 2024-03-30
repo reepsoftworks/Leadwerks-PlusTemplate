@@ -9,6 +9,7 @@ namespace Leadwerks
 	{
 	public:
 		static void CallCMDWindow();
+		static std::map<std::string, std::string> ParseCommandLine(int argc, const char* argv[]);
 		static int Message(const std::string& title, const std::string& message);
 		static int Message(const std::wstring& title, const std::wstring& message);
 		static int MessageAlert(const std::string& title, const std::string& message);

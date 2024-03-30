@@ -23,8 +23,10 @@ namespace App
 	protected:
 		std::string title;
 		Leadwerks::Window* window_ptr;
+		Leadwerks::SplashWindow* splash;
 		Leadwerks::Framebuffer* framebuffer;
 		Leadwerks::Interface* ui;
+		Leadwerks::ImGuiLayer* imgui;
 		Leadwerks::Timer* delaytimer;
 		GraphicWindowSettings currentsettings;
 		bool showonready;
@@ -33,8 +35,6 @@ namespace App
 		static bool EventCallback(const Leadwerks::Event& e, Leadwerks::Object* extra);
 		virtual bool ProcessEvent(const Leadwerks::Event& e);
 	public:
-		Leadwerks::SplashWindow* splash;
-
 		GraphicsWindow();
 		virtual ~GraphicsWindow();
 
@@ -49,9 +49,13 @@ namespace App
 		bool MouseDown(const int button);
 		Leadwerks::Vec2 GetMouseAxis(const float dpi = 1000);
 
-		static GraphicsWindow* Create(const std::string& title, const GraphicWindowSettings& settings, const bool showonready = true);
+		void Sync(const bool sync = false, const float framerate = 0.0f);
+
+		static GraphicsWindow* Create(const std::string& title, const GraphicWindowSettings& settings, Leadwerks::SplashWindow* splashwindow = NULL);
 		static GraphicsWindow* GetCurrent();
 		Leadwerks::Framebuffer* GetFramebuffer();
+		Leadwerks::ImGuiLayer* GetImGui();
+		Leadwerks::Interface* GetInterface();
 		GraphicWindowSettings CurrentSettings() { return currentsettings; };
 	};
 
