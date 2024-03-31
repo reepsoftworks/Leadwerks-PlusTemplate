@@ -1,0 +1,13 @@
+Author=Reep Softworks"
+MainSourceFile=""
+MultiLineCommentOpenToken="//"
+SingleLineCommentToken="//"
+CommandLine=""
+Copyright="Reep Softworks 2021-2023"
+WindowsPublishPath=""
+AndroidPublishPath=""
+iOSPublishPath=""
+MacOSPublishPath=""
+Template="Blank Project"
+AppID=1803590
+DepotID=0

@@ -46,6 +46,7 @@ namespace Leadwerks
 	bool ImGuiLayer::StartFrame()
 	{
 		if (!m_context) return false;
+		//if (framestarted) return true;
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
@@ -57,6 +58,7 @@ namespace Leadwerks
 	{
 		if (!m_context) return false;
 		if (!framestarted) return false;
+		//ImGui::End();
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		return true;

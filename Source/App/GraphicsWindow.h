@@ -35,6 +35,8 @@ namespace App
 		static bool EventCallback(const Leadwerks::Event& e, Leadwerks::Object* extra);
 		virtual bool ProcessEvent(const Leadwerks::Event& e);
 	public:
+		Leadwerks::Vec4* uibasecolor;
+
 		GraphicsWindow();
 		virtual ~GraphicsWindow();
 

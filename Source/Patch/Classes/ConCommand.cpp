@@ -5,6 +5,16 @@
 namespace Leadwerks
 {
 	bool cheating = false;
+	void EnableCheats()
+	{
+		cheating = true;
+	}
+
+	bool Cheating()
+	{
+		return cheating;
+	}
+
 	std::map<std::string, ConCommand>* concommands = nullptr;
 	ConCommand::ConCommand(const std::string& commandname, const std::function<void(std::vector<std::string>)>& callback, const int flag, const std::string& description)
 	{

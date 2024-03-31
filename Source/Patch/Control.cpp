@@ -46,7 +46,7 @@ namespace Leadwerks
 		int id = EVENT_NONE;
 		Object* source = NULL;
 		Object* extra = NULL;
-		std::function<void(Event, Object*)> callback;
+		std::function<bool(Event, Object*)> callback;
 	};
 	std::vector<EventListener> eventlisteners;
 
@@ -68,7 +68,23 @@ namespace Leadwerks
 		{
 			for (const auto& l : eventlisteners)
 			{
-				l.callback(e, l.extra);
+				auto currevent = e;
+				if (l.id == EVENT_NONE)
+				{
+					// None allows live listening to all events.
+					l.callback(currevent, l.extra);
+				}
+				else
+				{
+					// Do an ID check
+					if (currevent.id == e.id)
+					{
+						if (!l.callback(currevent, l.extra))
+						{
+							//Print("Failed to callback " + String(currevent.id));
+						}
+					}
+				}
 			}
 		}
 	}
@@ -90,7 +106,7 @@ namespace Leadwerks
 		EventQueue::Emit(id, source, data, x, y, width, height, extra);
 	}
 
-	void ListenEvent(const int id, Object* source, std::function<void(Event, Object*)> func, Object* extra)
+	void ListenEvent(const int id, Object* source, std::function<bool(Event, Object*)> func, Object* extra)
 	{
 		auto listener = EventListener();
 		listener.id = id;

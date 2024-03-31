@@ -24,7 +24,7 @@ workspace "LeadwerksTest"
 		architecture "x86"
 
     project "LeadwerksTest"
-        targetname ("UltraTest")
+        targetname ("LeadwerksTest")
         location "%{SoultionDir}"
         language "C++"
         cppdialect "C++14"
@@ -43,8 +43,8 @@ workspace "LeadwerksTest"
         includedirs
         {
             -- Steamworks (TODO: Update path)
-            "%{LeadwerksPath}/Include/Libraries/steamworks/public/steam",
-            --"%{SourceDir}/Patch/Libraries/steamworks/public/steam",
+            --"%{LeadwerksPath}/Include/Libraries/steamworks/public/steam",
+            "%{SourceDir}/Patch/Libraries/steamworks/public/steam",
 
             -- Imgui
             "%{SourceDir}/Patch/Libraries/imgui/include",
@@ -126,7 +126,7 @@ workspace "LeadwerksTest"
         libdirs 
         { 
             -- Steamworks
-            --"%{SourceDir}/Patch/Library/Windows/x86",
+            "%{SourceDir}/Patch/Libraries/steamworks/redistributable_bin",
 
             -- imgui
             "%{SourceDir}/Patch/Libraries/imgui/lib",

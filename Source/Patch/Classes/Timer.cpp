@@ -52,6 +52,11 @@ namespace Leadwerks
 		if (timer) timer->Update();
 	}
 
+	static void Test()
+	{
+		Print("dnjfjdshfjd");
+	}
+
 	Timer* Timer::Create(const int frequency)
 	{
 		auto timer = new Timer();

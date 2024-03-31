@@ -22,4 +22,7 @@ namespace Leadwerks
 		static bool Find(const std::string& name);
 		static std::map<std::string, ConCommand>* GetCommands();
 	};
+
+	extern void EnableCheats();
+	extern bool Cheating();
 }

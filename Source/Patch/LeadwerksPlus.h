@@ -67,6 +67,7 @@ namespace Leadwerks
 //Classes
 #include "Classes/SmartObject.h"
 #include "Classes/FileStream.h"
+#include "Classes/Config.h"
 #include "Classes/JSON.h"
 //#include "Classes/GamePad.h"
 #include "Classes/Tokenizer.h"

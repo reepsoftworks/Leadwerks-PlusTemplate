@@ -17,6 +17,7 @@ namespace App
     bool GraphicsWindow::EventCallback(const Event& e, Leadwerks::Object* extra)
     {
         auto elem = CastObject<GraphicsWindow>(extra);
+        if (elem == NULL) return false;
         return elem->ProcessEvent(e);
     }
 
@@ -60,10 +61,17 @@ namespace App
         ui = NULL;
         imgui = NULL;
         splash = NULL;
+        uibasecolor = NULL;
 	}
 
 	GraphicsWindow::~GraphicsWindow()
 	{
+        if (uibasecolor != NULL)
+        {
+            uibasecolor->Release();
+            uibasecolor = NULL;
+        }
+
         if (imgui != NULL)
         {
             imgui->Release();
@@ -181,8 +189,11 @@ namespace App
         ui->SetScale(OS::GetDisplayScale());
         ui->GetBase()->SetScript("Scripts/GUI/Panel.lua");
 
+        if (uibasecolor == NULL) uibasecolor = new Vec4(0, 0, 0, 0);
+        ui->GetBase()->SetObject("backgroundcolor", uibasecolor);
+
         // Make this invisable.
-        ui->GetBase()->CallFunction("SetColor", 0.0f, 0.0f, 0.0f, 0.0f, 0);
+        //ui->GetBase()->CallFunction("SetColor", 1.0f, 0.0f, 0.0f, 1.0f, 1);
 
         if (firstwindow)
         {
@@ -495,6 +506,7 @@ namespace App
             }
             else
             {
+                current->Release();
                 current = NULL;
             }
         }

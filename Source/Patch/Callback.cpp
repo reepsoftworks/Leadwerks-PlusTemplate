@@ -23,6 +23,13 @@ namespace Leadwerks
 	{
 		if (!rawcallbacks.empty())
 		{
+			for (auto callback : rawcallbacks)
+			{
+				if (callback.id == id) callback.function(callback.source, callback.extra);
+			}
+
+
+			/*
 			for (const auto& l : rawcallbacks)
 			{
 				auto callback = l;
@@ -41,6 +48,7 @@ namespace Leadwerks
 					}
 				}
 			}
+			*/
 		}
 
 		//for (const auto& i : rawcallbacks)

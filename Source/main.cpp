@@ -21,8 +21,25 @@ int main(int argc, const char* argv[])
 {
     ParseArguments(argc, argv);
 
+    if (!App::VendorCheck())
+        return 1;
+
     GraphicWindowSettings windowsettings;
-    auto window = GraphicsWindow::Create("Leadwerks", windowsettings, SplashWindow::Create(L"splashscreen.bmp"));
+    auto window = GraphicsWindow::Create("Leadwerks", windowsettings/*, SplashWindow::Create(L"splashscreen.bmp")*/);
+    if (!window) return 1;
+
+    //auto ui = window->GetInterface();
+    //auto basepanel = Widget::Panel(0, 0, 200, 200, ui->GetBase());
+    //basepanel->SetScript("Scripts/GUI/Panel.lua");
+    //basepanel->CallFunction("SetColor", 0.0f, 0.0f, 0.0f, 1.0f, 0);
+
+    //auto menu = CreateGameMenu<GameMenu>(window);
+
+    auto stats = CreateGadget<StatsGadget>(window);
+    auto console = CreateGadget<ConsoleGadget>(window);
+    console->Hide();
+
+    //auto gadget = CreateGadget<Gadget>(window);
 
     // World
     auto world = World::Create();
@@ -34,8 +51,8 @@ int main(int argc, const char* argv[])
     light->Turn(45, 35, 0);
     auto model = Model::Box();
 
-    //auto timer = Timer::Create(2000);
-    //ListenEvent(Event::TimerTick, timer, EventCallback);
+    auto timer = Timer::Create(2000);
+    ListenEvent(Event::TimerTick, timer, EventCallback);
 
     bool running = true;
     while (running)
@@ -56,7 +73,7 @@ int main(int argc, const char* argv[])
             else if (e.id == Event::KeyDown)
             {
                 static bool fullscreen = false;
-                if (e.data == Key::Space)
+                if (e.data == Key::F11)
                 {
                     GraphicWindowSettings resize;
 
@@ -73,36 +90,23 @@ int main(int argc, const char* argv[])
 
                     window->Resize(resize);
                 }
+                else if (e.data == Key::F1)
+                {
+                    bool h = console->GetHidden();
+                    if (!h)
+                        console->Hide();
+                    else
+                        console->Show();
+                }
             }
         }
-
-        //if (window->KeyHit(Key::Escape)) window->Close();
 
         model->Turn(0, 1.0f * Time::GetSpeed(), 0);
-
-        // Test ImGUI
-        if (window->GetImGui()->StartFrame())
-        {
-            bool show_demo_window = true;
-            //if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
-
-            const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y), ImGuiCond_None);
-            ImGui::SetNextWindowSize(ImVec2(200, 200));
-
-            if (!ImGui::Begin("Dear ImGui Demo", &show_demo_window, /*ImGuiWindowFlags_NoBackground |*/ ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
-            {
-            }
-
-            ImGui::Text("Hello world!");
-            ImGui::End();
-        }
 
         // World
         UpdateTime();
         world->Update();
         world->Render();
-
         window->Sync();
     }
 

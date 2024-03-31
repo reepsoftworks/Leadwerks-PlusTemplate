@@ -8,7 +8,7 @@
 
 namespace Leadwerks
 {   
-    class FileStream : public SmartObject
+    class FileStream : public Object
     {
     public:
         std::fstream file;
