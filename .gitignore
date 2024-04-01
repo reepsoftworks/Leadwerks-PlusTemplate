@@ -43,6 +43,13 @@ backup/**
 *.rar
 *.tar.gz
 
+# Raw Image Files
+*.png
+*.tga
+
+# ImGui ini file
+imgui.ini
+
 # Exclude tools
 !Tools/
 

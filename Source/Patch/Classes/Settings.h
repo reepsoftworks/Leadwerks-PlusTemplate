@@ -13,7 +13,10 @@ namespace Leadwerks
 		static void SetTerrainQuality(Setting setting);
 		static void SetWaterQuality(Setting setting);
 		static void SetHDR(const bool mode);
+		static void SetFov(const float fovvalue);
 
 		static void Apply(Camera* camera);
 	};
+
+	extern Camera* MainCamera;
 }

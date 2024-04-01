@@ -14,13 +14,13 @@ namespace App
 		bool autoscroll;
 
 		void ClearLog();
+		void ExecCommand(const char* command_line);
 	public:
 		ConsoleGadget();
 		~ConsoleGadget();
 
-		void ExecCommand(const char* command_line);
 		void AddLog(const char* fmt, ...);
-		virtual void Draw(bool* p_open);
+		virtual void DrawUI(bool* open);
 		int TextEditCallback(ImGuiInputTextCallbackData* data);
 	};
 }

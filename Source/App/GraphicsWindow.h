@@ -51,12 +51,12 @@ namespace App
 		bool MouseDown(const int button);
 		Leadwerks::Vec2 GetMouseAxis(const float dpi = 1000);
 
+		bool StartFrame();
 		void Sync(const bool sync = false, const float framerate = 0.0f);
 
 		static GraphicsWindow* Create(const std::string& title, const GraphicWindowSettings& settings, Leadwerks::SplashWindow* splashwindow = NULL);
 		static GraphicsWindow* GetCurrent();
 		Leadwerks::Framebuffer* GetFramebuffer();
-		Leadwerks::ImGuiLayer* GetImGui();
 		Leadwerks::Interface* GetInterface();
 		GraphicWindowSettings CurrentSettings() { return currentsettings; };
 	};

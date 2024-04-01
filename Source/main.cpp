@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "App/App.h"
+#include "ActorSystem.h"
 
 using namespace Leadwerks;
 using namespace App;
@@ -13,15 +14,20 @@ bool EventCallback(const Event& e, Object* extra)
     {
         Print("Tick");
     }
-
     return true;
+}
+
+void Test()
+{
+    auto entity = Model::Create();
+    RegisterActors(entity);
 }
 
 int main(int argc, const char* argv[])
 {
-    ParseArguments(argc, argv);
+    Program::ParseArguments(argc, argv);
 
-    if (!App::VendorCheck())
+    if (!Program::VendorCheck())
         return 1;
 
     GraphicWindowSettings windowsettings;
@@ -39,20 +45,27 @@ int main(int argc, const char* argv[])
     auto console = CreateGadget<ConsoleGadget>(window);
     console->Hide();
 
+    //auto texturegadget = CreateGadget<TextureGadget>(window);
+    //auto tex = AssetLoader::LoadTexture("Materials/Developer/Textures/grid01.png");
+    //texturegadget->SetImage(tex);
+    //texturegadget->SetSize(iVec2(512,512));
+    //texturegadget->SetOrder(1);
     //auto gadget = CreateGadget<Gadget>(window);
 
     // World
-    auto world = World::Create();
-    auto camera = Camera::Create();
-    camera->SetClearColor(0.125f);
-    camera->SetPosition(0, 0, -3);
-    Settings::Apply(camera);
-    auto light = DirectionalLight::Create();
-    light->Turn(45, 35, 0);
-    auto model = Model::Box();
+    //auto world = World::Create();
+    //auto camera = Camera::Create();
+    //camera->SetClearColor(0.125f);
+    //camera->SetPosition(0, 0, -3);
+    //Settings::Apply(camera);
+    //auto light = DirectionalLight::Create();
+    //light->Turn(45, 35, 0);
+    //auto model = Model::Box();
 
-    auto timer = Timer::Create(2000);
-    ListenEvent(Event::TimerTick, timer, EventCallback);
+    //auto timer = Timer::Create(2000);
+    //ListenEvent(Event::TimerTick, timer, EventCallback);
+
+    auto scene = Scene::Create();
 
     bool running = true;
     while (running)
@@ -60,7 +73,7 @@ int main(int argc, const char* argv[])
         while (PeekEvent())
         {
             const auto e = WaitEvent();
-            if (e.id == Event::WindowClose)
+            if (e.id == Event::Quit)
             {
                 Print("Window Close");
                 running = false;
@@ -101,12 +114,14 @@ int main(int argc, const char* argv[])
             }
         }
 
-        model->Turn(0, 1.0f * Time::GetSpeed(), 0);
 
         // World
-        UpdateTime();
-        world->Update();
-        world->Render();
+        // model->Turn(0, 1.0f * Time::GetSpeed(), 0);
+        //UpdateTime();
+        //world->Update();
+        //world->Render();
+
+        scene->Update();
         window->Sync();
     }
 

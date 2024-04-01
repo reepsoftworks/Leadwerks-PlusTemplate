@@ -49,6 +49,10 @@ namespace App
             }
             Activate();
         }
+        else if (e.id == Event::WindowClose && e.source == this)
+        {
+            EmitEvent(Event::Quit);
+        }
 
         return true;
     }
@@ -154,7 +158,7 @@ namespace App
             break;
         }
 
-        if (GetAppMode() == MODE_DEBUG)
+        if (Program::GetAppMode() == Program::DebugMode)
         {
             std::string debugtag = " - [Debug]"; // 10;
             if (String::Right(title, (int)debugtag.length()) != debugtag)
@@ -461,9 +465,20 @@ namespace App
     }
 #endif
 
+    bool GraphicsWindow::StartFrame()
+    {
+        bool ret = false;
+        if (imgui) ret = imgui->StartFrame();
+        if (framebuffer->GetBlendMode() != Blend::Alpha) framebuffer->SetBlendMode(Blend::Alpha);
+        return ret;
+    }
+
     void GraphicsWindow::Sync(const bool sync, const float framerate)
     {
         window_ptr->Update();
+        FireCallback(CALLBACK_POSTRENDER, window_ptr, NULL);
+        //framebuffer->SetColor(1,1,1,1);
+        if (framebuffer->GetBlendMode() != Blend::Solid) framebuffer->SetBlendMode(Blend::Solid);
         if (imgui) imgui->EndFrame();
         UpdateRender(framebuffer, sync, framerate);
     }
@@ -478,11 +493,6 @@ namespace App
     {
         window_ptr->Update();
         return framebuffer;
-    }
-
-    Leadwerks::ImGuiLayer* GraphicsWindow::GetImGui()
-    {
-        return imgui;
     }
 
     Leadwerks::Interface* GraphicsWindow::GetInterface()

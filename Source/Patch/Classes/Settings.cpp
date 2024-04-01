@@ -10,33 +10,35 @@ namespace Leadwerks
     Setting tessellation = SETTING_MEDIUM;
     Setting terrain = SETTING_MEDIUM;
     Setting water = SETTING_MEDIUM;
-    bool hdr = false;
+    bool hdr = true;
+    float fov = 70.0f;
+    Camera* MainCamera;
 
 	void Settings::SetMSAA(Setting setting)
 	{
         msaa = setting;
-		if (ActiveCamera)
+		if (MainCamera)
 		{
             switch (setting)
             {
             case SETTING_ULTRA:
-                ActiveCamera->SetMultisampleMode(16);
+                MainCamera->SetMultisampleMode(16);
                 break;
 
             case SETTING_HIGH:
-                ActiveCamera->SetMultisampleMode(8);
+                MainCamera->SetMultisampleMode(8);
                 break;
 
             case SETTING_MEDIUM:
-                ActiveCamera->SetMultisampleMode(4);
+                MainCamera->SetMultisampleMode(4);
                 break;
 
             case SETTING_LOW:
-                ActiveCamera->SetMultisampleMode(2);
+                MainCamera->SetMultisampleMode(2);
                 break;
 
             case SETTING_DISABLED:
-                ActiveCamera->SetMultisampleMode(1);
+                MainCamera->SetMultisampleMode(1);
                 break;
 
             default:
@@ -48,22 +50,22 @@ namespace Leadwerks
     void Settings::SetLightQuality(Setting setting)
     {
         light = setting;
-        if (ActiveCamera)
+        if (MainCamera)
         {
             switch (setting)
             {
             case SETTING_ULTRA:
             case SETTING_HIGH:
-                ActiveCamera->GetWorld()->SetLightQuality(2);
+                MainCamera->GetWorld()->SetLightQuality(2);
                 break;
 
             case SETTING_MEDIUM:
-                ActiveCamera->GetWorld()->SetLightQuality(1);
+                MainCamera->GetWorld()->SetLightQuality(1);
                 break;
 
             case SETTING_LOW:
             case SETTING_DISABLED:
-                ActiveCamera->GetWorld()->SetLightQuality(0);
+                MainCamera->GetWorld()->SetLightQuality(0);
                 break;
 
             default:
@@ -74,9 +76,9 @@ namespace Leadwerks
 
     static void SetShadowScale(const int size)
     {
-        if (ActiveCamera)
+        if (MainCamera)
         {
-            for (const auto& p : ActiveCamera->GetWorld()->entities)
+            for (const auto& p : MainCamera->GetWorld()->entities)
             {
                 if (p->GetClass() == Object::PointLightClass || p->GetClass() == Object::SpotLightClass)
                 {
@@ -91,7 +93,7 @@ namespace Leadwerks
     void Settings::SetShadowQuality(Setting setting)
     {
         shadow = setting;
-        if (ActiveCamera)
+        if (MainCamera)
         {
             switch (setting)
             {
@@ -118,22 +120,22 @@ namespace Leadwerks
     void Settings::SetTessellationQuality(Setting setting)
     {
         tessellation = setting;
-        if (ActiveCamera)
+        if (MainCamera)
         {
             switch (setting)
             {
             case SETTING_ULTRA:
             case SETTING_HIGH:
-                ActiveCamera->GetWorld()->SetTessellationQuality(2);
+                MainCamera->GetWorld()->SetTessellationQuality(2);
                 break;
 
             case SETTING_MEDIUM:
-                ActiveCamera->GetWorld()->SetTessellationQuality(1);
+                MainCamera->GetWorld()->SetTessellationQuality(1);
                 break;
 
             case SETTING_LOW:
             case SETTING_DISABLED:
-                ActiveCamera->GetWorld()->SetTessellationQuality(0);
+                MainCamera->GetWorld()->SetTessellationQuality(0);
                 break;
 
             default:
@@ -149,16 +151,16 @@ namespace Leadwerks
         {
         case SETTING_ULTRA:
         case SETTING_HIGH:
-            ActiveCamera->GetWorld()->SetTerrainQuality(2);
+            MainCamera->GetWorld()->SetTerrainQuality(2);
             break;
 
         case SETTING_MEDIUM:
-            ActiveCamera->GetWorld()->SetTerrainQuality(1);
+            MainCamera->GetWorld()->SetTerrainQuality(1);
             break;
 
         case SETTING_LOW:
         case SETTING_DISABLED:
-            ActiveCamera->GetWorld()->SetTerrainQuality(0);
+            MainCamera->GetWorld()->SetTerrainQuality(0);
             break;
 
         default:
@@ -169,22 +171,22 @@ namespace Leadwerks
     void Settings::SetWaterQuality(Setting setting)
     {
         water = setting;
-        if (ActiveCamera)
+        if (MainCamera)
         {
             switch (setting)
             {
             case SETTING_ULTRA:
             case SETTING_HIGH:
-                ActiveCamera->GetWorld()->SetWaterQuality(2);
+                MainCamera->GetWorld()->SetWaterQuality(2);
                 break;
 
             case SETTING_MEDIUM:
-                ActiveCamera->GetWorld()->SetWaterQuality(1);
+                MainCamera->GetWorld()->SetWaterQuality(1);
                 break;
 
             case SETTING_LOW:
             case SETTING_DISABLED:
-                ActiveCamera->GetWorld()->SetWaterQuality(0);
+                MainCamera->GetWorld()->SetWaterQuality(0);
                 break;
 
             default:
@@ -196,17 +198,24 @@ namespace Leadwerks
     void Settings::SetHDR(const bool mode)
     {
         hdr = mode;
-        if (ActiveCamera) ActiveCamera->SetHDRMode(mode);
+        if (MainCamera) MainCamera->SetHDRMode(mode);
+    }
+
+    void Settings::SetFov(const float fovvalue)
+    {
+        fov = fovvalue;
+        if (MainCamera) MainCamera->SetFOV(fov);
     }
 
     void Settings::Apply(Camera* camera)
     {
-        ActiveCamera = camera;
+        if (camera != MainCamera) MainCamera = camera;
         SetMSAA(msaa);
         SetLightQuality(light);
         SetShadowQuality(shadow);
         SetTessellationQuality(tessellation);
         SetTerrainQuality(terrain);
         SetHDR(hdr);
+        SetFov(fov);
     }
 }

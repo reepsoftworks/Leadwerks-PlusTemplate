@@ -5,15 +5,20 @@ namespace App
 {
 	using namespace Leadwerks;
 
-	AppMode appmode;
+	int appmode;
 	uint64_t AppID;
 	std::map<std::string, std::string> Arguments;
-	extern void ParseArguments(int argc, const char* argv[])
+
+	const int Program::NormalMode = 0;
+	const int Program::EditorMode = 1;
+	const int Program::DebugMode = 2;
+
+	void Program::ParseArguments(int argc, const char* argv[])
 	{
 		//AttachDebugHook();
 		Arguments.clear();
 		Arguments = OS::ParseCommandLine(argc, argv);
-		appmode = MODE_NORMAL;
+		appmode = NormalMode;
 
 		auto exename = std::string(argv[0]);
 		exename = Leadwerks::FileSystem::StripAll(exename);
@@ -21,43 +26,43 @@ namespace App
 		Leadwerks::System::AppName = exename;
 
 #ifdef DEBUG
-		appmode = MODE_DEBUG;
+		appmode = DebugMode;
 #else
 		if (CheckArgument("debug"))
 		{
-			appmode = MODE_DEBUG;
+			appmode = DebugMode;
 		}
 		else if (CheckArgument("devmode"))
 		{
-			appmode = MODE_EDITOR;
+			appmode = EditorMode;
 		}
 #endif // DEBUG
 
 		// If our mode is anything above normal or if -console is used, call the CMD window.
-		if (appmode > MODE_NORMAL || CheckArgument("console")) OS::CallCMDWindow();
+		if (appmode > NormalMode || CheckArgument("console")) OS::CallCMDWindow();
 	}
 
-	bool CheckArgument(const std::string& argument)
+	bool Program::CheckArgument(const std::string& argument)
 	{
 		return !Arguments[argument].empty();
 	}
 
-	std::string CheckArgumentString(const std::string& argument, const std::string& defaultvalue)
+	std::string Program::CheckArgumentString(const std::string& argument, const std::string& defaultvalue)
 	{
 		return Arguments[argument];
 	}
 
-	int CheckArgumentValue(const std::string& argument, const int defaultvalue)
+	int Program::CheckArgumentValue(const std::string& argument, const int defaultvalue)
 	{
 		return String::Int(Arguments[argument]);
 	}
 
-	AppMode GetAppMode()
+	const int Program::GetAppMode()
 	{
 		return appmode;
 	}
 
-	bool VendorCheck(const bool skipcheck)
+	bool Program::VendorCheck(const bool skipcheck)
 	{
 		auto driver = Leadwerks::GraphicsDriver::GetCurrent();
 		if (driver == NULL)
@@ -82,7 +87,7 @@ namespace App
 		return true;
 	}
 
-	bool LoadWerkFile()
+	bool Program::LoadWerkFile()
 	{
 		if (Leadwerks::System::AppName.empty()) return false;
 		std::string file = Leadwerks::System::AppName + ".werk";

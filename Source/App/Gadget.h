@@ -7,31 +7,40 @@ namespace App
 	{
 	protected:
 		bool shown;
+		int renderlayer;
 	public:
 		Gadget();
 		virtual ~Gadget();
-		virtual void Draw(bool* p_open);
+		virtual void DrawUI(bool* open);
+		virtual void PostRender(Leadwerks::Framebuffer* context);
 
 		void Show();
 		void Hide();
 		bool GetHidden();
 
+		void SetOrder(const int layer);
+		int GetOrder();
+
+		static std::vector<Gadget*> gadgets;
+		static void ReleaseGadgets();
+		static void HideGadgets(const bool b);
+		static void HideUI(const bool b);
 		static void GadgetCallback(Object* source, Object* extra);
 	};
-
-	extern std::vector<Gadget*> gadgets;
-	extern void ReleaseGadgets();
-	extern void HideGadgets(const bool b);
 
 	template <class T>
 	T* CreateGadget(GraphicsWindow* window)
 	{
-		auto gadget = new T();
-		if (gadgets.empty())
+		auto c = new T();
+		auto gadget = dynamic_cast<T*>(c);
+		if (gadget)
 		{
-			Leadwerks::SetCallback(Leadwerks::CALLBACK_UPDATE, NULL, Gadget::GadgetCallback);
+			if (Gadget::gadgets.empty())
+			{
+				Leadwerks::SetCallback(CALLBACK_POSTRENDER, window, Gadget::GadgetCallback);
+			}
+			Gadget::gadgets.push_back(gadget);
 		}
-		gadgets.push_back(gadget);
 		return gadget;
 	};
 }
