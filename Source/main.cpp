@@ -81,7 +81,6 @@ int main(int argc, const char* argv[])
             }
             else if (e.id == EVENT_STARTRENDERER)
             {
-                Print("EVENT_STARTRENDERER");
             }
             else if (e.id == Event::KeyDown)
             {

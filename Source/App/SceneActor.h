@@ -33,15 +33,18 @@ namespace App
 
 		virtual void Attach();
 		virtual void Detach();
+
 		virtual void Start();
 
 		Leadwerks::Entity* GetEntity();
 		virtual void FireOutput(const std::string& eventname);
 		virtual bool Use(Leadwerks::Entity* source, Leadwerks::Object* extra) { return false; };
 
-		virtual void Load(nlohmann::json properties) {};
-		virtual void Save(nlohmann::json properties) {};
+		virtual void Load(nlohmann::json properties = NULL) {};
+		virtual void Save(nlohmann::json properties = NULL) {};
 
 		friend class Scene;
 	};
+
+#define ProcessInputSignal(_input_, _sender_) if (inputname == #_input_) _input_(_sender_)
 }

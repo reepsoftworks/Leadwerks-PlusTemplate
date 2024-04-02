@@ -88,6 +88,6 @@ typedef Leadwerks::Vec2 exposed_vec2;
 typedef Leadwerks::Vec3 exposed_vec3;
 typedef Leadwerks::Vec4 exposed_vec4;
 typedef Leadwerks::Entity exposed_entity;
-typedef void exposed_func_input;
+typedef void exposed_input;
 typedef void exposed_output;
-#define ATTACH_ENTITY_TO_ACTOR(_entity_, _actor_) if (_entity_->GetString("actor") == #_actor_) _entity_->SetActor(new _actor_()) 
+#define ATTACH_ENTITY_TO_ACTOR(_entity_, _actor_) if (_entity_->GetString("actor") == #_actor_) _entity_->SetActor(new _actor_())

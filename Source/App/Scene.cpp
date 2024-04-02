@@ -14,6 +14,12 @@ namespace App
 		if (scene)
 		{
 			RegisterActors(entity);
+			auto actor = dynamic_cast<SceneActor*>(entity->actor);
+			if (actor)
+			{
+				actor->Load();
+			}
+
 			scene->WriteEntityID(entity);
 		}
 
@@ -326,7 +332,7 @@ namespace App
 			// Write the id to a keyvalue
 			std::string uuid = name + "_" + to_string(posinlist) + "_" + String(hasactor);
 			entity->SetKeyValue("uuid", uuid);
-			Print(uuid);
+			//Print(uuid);
 			entities.push_back(entity);
 		}
 	}

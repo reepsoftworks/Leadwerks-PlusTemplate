@@ -195,7 +195,7 @@ workspace "LeadwerksTest"
         -- Preprocessor
         prebuildcommands
         {
-            --"\"%{ToolsPath}/preprocessor.exe\" +path ../"
+            "\"%{ToolsPath}/PreWerk.exe\" +path ../"
         }
 
     filter {"system:windows", "configurations:Debug"}            

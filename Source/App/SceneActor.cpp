@@ -25,7 +25,7 @@ namespace App
 
 	void SceneActor::Attach()
 	{
-		SetCallback(CALLBACK_MAPLOADCOMPLETE, this, TimerCallback);
+		SetCallback(CALLBACK_MAPLOADCOMPLETE, this, SceneActorCallback);
 	}
 
 	void SceneActor::Detach()
