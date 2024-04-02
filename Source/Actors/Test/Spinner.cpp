@@ -14,6 +14,7 @@ void Spinner::UpdateWorld()
 	{
 		auto delta = Time::GetSpeed();
 		GetEntity()->Turn(spinspeed.x * delta, spinspeed.y * delta, spinspeed.z * delta);
+		OnTurn();
 	}
 }
 
