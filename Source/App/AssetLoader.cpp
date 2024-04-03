@@ -31,7 +31,7 @@ namespace App
 	{
 		if (fallbacktexture == NULL)
 		{
-            Print("Creating fallback material!");
+            //Print("Creating fallback texture!");
             fallbacktexture = Texture::Create(8, 8);
 
             // Color for the first square
@@ -72,18 +72,11 @@ namespace App
         if (fallbackskybox == NULL)
         {
             fallbackskybox = Texture::Create(8, 8);
-
-            // Color for the first square
-            int r1 = 0;
-            int g1 = 0;
-            int b1 = 0;
-            int a1 = 0;
-
             for (int w = 0; w < fallbackskybox->GetWidth(); w++)
             {
                 for (int h = 0; h < fallbackskybox->GetHeight(); h++)
                 {
-                    fallbackskybox->WritePixel(w, h, r1, g1, b1, a1, 0, 0);
+                    fallbackskybox->WritePixel(w, h, 0, 0, 0, 1, 0, 0);
                 }
             }
         }
@@ -98,6 +91,7 @@ namespace App
         {
             fallbackmaterial = Material::Create();
 
+            /*
             auto texture = DefaultTexture();
             if (texture) fallbackmaterial->SetTexture(texture);
 
@@ -108,6 +102,7 @@ namespace App
             }
 
             fallbackmaterial->SetShader(shader);
+            */
         }
 
         return fallbackmaterial;
@@ -119,8 +114,8 @@ namespace App
         if (!fallbackmodel)
         {
             fallbackmodel = Model::Box();
-            auto mat = AssetLoader::DefaultMaterial();
-            if (mat) fallbackmodel->SetMaterial(mat);    
+            //auto mat = AssetLoader::DefaultMaterial();
+            //if (mat) fallbackmodel->SetMaterial(mat);    
         }
 
         return fallbackmodel;
@@ -220,10 +215,10 @@ namespace App
         auto texture = Material::Load(path, flags, fileid);
 
         // If the pointer is vaild, return here.
-        if (texture) return texture;
+        //if (texture) return texture;
 
         // Return the fallback instead!
-        return DefaultMaterial();
+        return texture;
 	}
 
 	Leadwerks::Model* AssetLoader::LoadModel(const std::string& path, const int flags, const uint64_t fileid)

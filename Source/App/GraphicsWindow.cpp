@@ -39,8 +39,12 @@ namespace App
         }
         else if (e.id == Event::TimerTick && e.source == delaytimer)
         {
-            delaytimer->Release();
-            delaytimer = NULL;
+            if (delaytimer)
+            {
+                delaytimer->Release();
+                delaytimer = NULL;
+            }
+
             if (splash)
             {
                 splash->Close();
@@ -156,6 +160,14 @@ namespace App
 
         default:
             break;
+        }
+
+        // Apply DPI scaling.
+        float scale = OS::GetDisplayScale();
+        if (scale > 1.0f)
+        {
+            final_windowsize.x *= static_cast<int>(scale);
+            final_windowsize.y *= static_cast<int>(scale);
         }
 
         if (Program::GetAppMode() == Program::DebugMode)

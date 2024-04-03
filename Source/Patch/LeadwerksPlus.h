@@ -78,6 +78,7 @@ namespace Leadwerks
 #include "Classes/SplashWindow.h"
 #include "Classes/ImGuiLayer.h"
 #include "Classes/ImageTexture.h"
+#include "Classes/Input.h"
 
 // Actor defs
 typedef int exposed_int;

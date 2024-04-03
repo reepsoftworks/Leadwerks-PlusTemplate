@@ -12,10 +12,8 @@ namespace Leadwerks
 
 	Timer::~Timer()
 	{
+		Stop();
 		RemoveCallback(this);
-		ticks = 0;
-		frequency = 0;
-		stopped = false;
 	}
 
 	void Timer::Update()

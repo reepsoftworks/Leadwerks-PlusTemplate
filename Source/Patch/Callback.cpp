@@ -4,16 +4,16 @@
 namespace Leadwerks
 {
 	//static std::multimap<const int, std::function<void(Object*, Object*)>> rawcallbacks;
-	static std::vector<Callback> rawcallbacks;
+	static std::vector<Callback*> rawcallbacks;
 	//static std::multimap<const int, std::function<void(std::shared_ptr<SmartObject>, std::shared_ptr<SmartObject>)>> callbacks;
 
 	void SetCallback(const int id, Object* source, std::function<void(Object*, Object*)> func, Object* extra)
 	{
-		auto callback = Callback();
-		callback.id = id;
-		callback.function = func;
-		callback.source = source;
-		callback.extra = extra;
+		auto callback = new Callback();
+		callback->id = id;
+		callback->function = func;
+		callback->source = source;
+		callback->extra = extra;
 		rawcallbacks.push_back(callback);
 
 		//rawcallbacks.insert(pair<const int, std::function<void(Object*, Object*)>>(id, func));
@@ -25,7 +25,7 @@ namespace Leadwerks
 		{
 			for (auto callback : rawcallbacks)
 			{
-				if (callback.id == id) callback.function(callback.source, callback.extra);
+				if (callback->id == id) callback->function(callback->source, callback->extra);
 			}
 
 
@@ -64,15 +64,21 @@ namespace Leadwerks
 		{
 			for (const auto& cb : rawcallbacks)
 			{
-				auto s = cb.source;
-				if (s = source)
+				auto s = cb->source;
+				if (s == source)
 				{
-					rawcallbacks.erase(
-						std::remove_if(rawcallbacks.begin(), rawcallbacks.end(), [&](Callback const& pet) {
-							return cb.source == source;
-							}),
-						rawcallbacks.end());
-					break;
+					//rawcallbacks.erase(
+					//	std::remove_if(rawcallbacks.begin(), rawcallbacks.end(), [&](Callback const& pet) {
+					//		return cb.source == source;
+					//		}),
+					//	rawcallbacks.end());
+					//break;
+
+					const bool found = std::find(rawcallbacks.begin(), rawcallbacks.end(), cb) != rawcallbacks.end();
+					if (found)
+					{
+						rawcallbacks.erase(std::remove(rawcallbacks.begin(), rawcallbacks.end(), cb), rawcallbacks.end());
+					}
 				}
 			}
 		}

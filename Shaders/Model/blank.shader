@@ -175,52 +175,31 @@ out vec4 fragData1;
 out vec4 fragData2;
 out vec4 fragData3;
 
-//https://www.shadertoy.com/view/lt2XWK
-void checkerboard(out vec4 fragColor, in vec2 fragCoord, float size)
-{
-    vec2 Pos = floor(fragCoord / size);
-    float PatternMask = mod(Pos.x + mod(Pos.y, 2.0), 2.0);
-    fragColor = PatternMask * vec4(1.0, 0.0, 1.0, 1.0);
-}
-
-//https://www.shadertoy.com/view/Mts3D7
-void checkerboard2( out vec4 fragColor, in vec2 fragCoord)
-{    
-    vec2 v = fragCoord.xy;
-    vec2 size = vec2(0.02, 0.01);
-    vec4 color1 =  vec4(1.0, 0.0, 1.0, 1.0);
-    vec4 color2 =  vec4(0,0,0,1);
-   
-    fragColor = color1;
-    
-    if (mod(v.y, size.x) < size.y) {
-        if (mod(v.x, size.x) > size.y)
-            fragColor = color2;
-    } else {
-        if (mod(v.x, size.x) < size.y)
-            fragColor = color2;
-    }
-}
-
 void main(void)
 {
 	//Clip plane discard
 	if (clipdistance0>0.0) discard;
 	
 	vec4 outcolor = ex_color;
-
-	//Modulate blend with diffuse map
-	//checkerboard(outcolor,ex_texcoords0, 0.02);
-	checkerboard2(outcolor,ex_texcoords0);
+	vec3 normal = ex_normal;
 
 	//Blend with selection color if selected
 	fragData0 = outcolor;
-
-	int materialflags=0;
+	
+#if BFN_ENABLED==1
+	//Best-fit normals
+	fragData1 = texture(texture15,normalize(vec3(normal.x,-normal.y,normal.z)));
+	fragData1.a = fragData0.a;
+#else
+	//Low-res normals
+	fragData1 = vec4(normalize(normal)*0.5+0.5,1.0);
+#endif
+	int materialflags=1;
 	if (ex_selectionstate>0.0) materialflags += 2;
 	if (decalmode==1) materialflags += 4;//brush
 	if (decalmode==2) materialflags += 8;//model
 	if (decalmode==4) materialflags += 16;//terrain
-	fragData1 = vec4(0.5,0.5,1.0,materialflags/255.0);
+	fragData1.a = materialflags/255.0;
 	fragData2 = vec4(0.0,0.0,0.0,0.0);
+	fragData3 = vec4(ex_VertexCameraPosition,1.0f);
 }

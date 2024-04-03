@@ -17,12 +17,6 @@ bool EventCallback(const Event& e, Object* extra)
     return true;
 }
 
-void Test()
-{
-    auto entity = Model::Create();
-    RegisterActors(entity);
-}
-
 int main(int argc, const char* argv[])
 {
     Program::ParseArguments(argc, argv);
@@ -31,7 +25,7 @@ int main(int argc, const char* argv[])
         return 1;
 
     GraphicWindowSettings windowsettings;
-    auto window = GraphicsWindow::Create("Leadwerks", windowsettings/*, SplashWindow::Create(L"splashscreen.bmp")*/);
+    auto window = GraphicsWindow::Create("Leadwerks", windowsettings, SplashWindow::Create(L"splashscreen.bmp"));
     if (!window) return 1;
 
     //auto ui = window->GetInterface();
@@ -130,12 +124,6 @@ int main(int argc, const char* argv[])
 #if 0
 int main(int argc, const char argv[])
 {
-    for (auto& gfx : OS::GetDisplayModes())
-    {
-        Print(gfx.ToString());
-    }
-
-    auto splash = App::SplashWindow::Create(L"splashscreen.bmp");
 
     Leadwerks::Window* window = Leadwerks::Window::Create("Leadwerks", 0, 0, 1280, 720, Window::Titlebar | Window::Center);
     OS::SetWindowTitlebarTheme(window, OS::ThemeDark);
@@ -155,8 +143,11 @@ int main(int argc, const char argv[])
 
     auto model = Model::Box();
 
-    auto timer = Timer::Create(2000);
-    ListenEvent(Event::TimerTick, timer, EventCallback);
+    // Try to load a bad material!
+    //model->SetMaterial(Material::Load("Materials/idonotexist.mat"));
+
+    //auto timer = Timer::Create(2000);
+    //ListenEvent(Event::TimerTick, timer, EventCallback);
 
     bool running = true;
     while (running)
@@ -201,6 +192,7 @@ int main(int argc, const char argv[])
             fullscreen = !fullscreen;
         }
 
+        model->Turn(0, 1.0f * Time::GetSpeed(), 0);
         UpdateTime();
         world->Update();
         world->Render();
