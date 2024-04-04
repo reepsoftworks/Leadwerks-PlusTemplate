@@ -25,7 +25,7 @@ namespace Leadwerks
 		else
 		{
 			this->value = value;
-			m_Callback(this->value);
+			if(m_Callback) m_Callback(this->value);
 		}
 	}
 

@@ -8,10 +8,15 @@ namespace App
 	protected:
 		bool shown;
 		int renderlayer;
+
+		static bool EventCallback(const Leadwerks::Event& e, Leadwerks::Object* extra);
+		virtual bool ProcessEvent(const Leadwerks::Event& e);
+		void Listen(const int eventid, Leadwerks::Object* source);
+
 	public:
 		Gadget();
 		virtual ~Gadget();
-		virtual void DrawUI(bool* open);
+		virtual void DrawUI();
 		virtual void PostRender(Leadwerks::Framebuffer* context);
 
 		void Show();

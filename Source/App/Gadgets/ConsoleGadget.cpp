@@ -179,7 +179,7 @@ namespace App
         scrolltobottom = true;
     }
 
-    void ConsoleGadget::DrawUI(bool* open)
+    void ConsoleGadget::DrawUI()
     {
         static long size = 0;
         if (logstream__ != NULL)
@@ -214,7 +214,7 @@ namespace App
             ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
         }
 
-        if (ImGui::Begin("InfoPanel", open, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize
+        if (ImGui::Begin("InfoPanel", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize
             | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBackground))
         {
             string build = " (Build " + String(VERSION_BUILD) + ")";
@@ -239,8 +239,17 @@ namespace App
             ImGui::SetNextWindowSize(ImVec2(work_size.x / 2 , work_size.y / 1.25f), ImGuiCond_Appearing);
         }
 
-        if (!ImGui::Begin("Console", open, ImGuiWindowFlags_NoCollapse))
+        //static bool consolewindow_opened = shown;
+        if (!ImGui::Begin("Console", &shown, ImGuiWindowFlags_NoCollapse))
         {
+            ImGui::End();
+            return;
+        }
+
+        // Handle closing
+        if (!shown)
+        {
+            Hide();
             ImGui::End();
             return;
         }

@@ -16,7 +16,7 @@ namespace App
 		virtual void SetImage(Leadwerks::Texture* texture);
 		virtual void SetSize(const Leadwerks::iVec2& size);
 
-		virtual void DrawUI(bool* open);
+		virtual void DrawUI();
 		virtual void PostRender(Leadwerks::Framebuffer* context);
 	};
 }

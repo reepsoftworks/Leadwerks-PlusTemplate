@@ -31,9 +31,18 @@ void Spinner::Load(nlohmann::json properties)
 	{
 		// Not implemented...
 		enabled = properties["enabled"].get<bool>();
-		auto arr = properties["spinspeed"] = nlohmann::json::array();
+		auto arr = properties["spinspeed"];
 		spinspeed = Vec3(arr[0], arr[1], arr[2]);
 	}
+}
+
+void Spinner::Save(nlohmann::json properties)
+{
+	properties["enabled"] = enabled;
+	properties["spinspeed"] = nlohmann::json::array();
+	properties["spinspeed"][0] = spinspeed.x;
+	properties["spinspeed"][1] = spinspeed.y;
+	properties["spinspeed"][2] = spinspeed.z;
 }
 
 exposed_input Spinner::Enable(Entity* sender)

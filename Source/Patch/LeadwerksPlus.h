@@ -77,7 +77,8 @@ namespace Leadwerks
 #include "Classes/Timer.h"
 #include "Classes/SplashWindow.h"
 #include "Classes/ImGuiLayer.h"
-#include "Classes/ImageTexture.h"
+#include "Classes/AssetLoader.h"
+#include "Classes/EntityVector.h"
 #include "Classes/Input.h"
 
 // Actor defs
@@ -92,3 +93,9 @@ typedef Leadwerks::Entity exposed_entity;
 typedef void exposed_input;
 typedef void exposed_output;
 #define ATTACH_ENTITY_TO_ACTOR(_entity_, _actor_) if (_entity_->GetString("actor") == #_actor_) _entity_->SetActor(new _actor_())
+
+#ifdef DEBUG
+#define DPrint(x) Leadwerks::Print(x)
+#else
+#define DPrint(x) 
+#endif

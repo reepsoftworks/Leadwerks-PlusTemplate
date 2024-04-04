@@ -15,6 +15,15 @@ namespace Leadwerks
 		static void SetHDR(const bool mode);
 		static void SetFov(const float fovvalue);
 
+		static Setting GetMSAA();
+		static Setting GetLightQuality();
+		static Setting GetShadowQuality();
+		static Setting GetTessellationQuality();
+		static Setting GetTerrainQuality();
+		static Setting GetWaterQuality();
+		static bool GetHDR();
+		static float GetFov();
+
 		static void Apply(Camera* camera);
 	};
 

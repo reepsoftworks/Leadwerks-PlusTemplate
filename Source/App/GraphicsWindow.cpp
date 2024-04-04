@@ -53,6 +53,23 @@ namespace App
             }
             Activate();
         }
+        else if (e.id == Event::WindowSize && e.source == this)
+        {
+            iVec2 pos = e.position;
+            GraphicWindowSettings newsettings = CurrentSettings();
+            newsettings.size = e.size;
+            newsettings.style = (GraphicWindowStyles)e.data;
+
+            // Only resize if any of the values differ...
+            if (currentsettings.size != newsettings.size ||
+                currentsettings.style != newsettings.style)
+            {
+                if (!Initialize(newsettings))
+                {
+                    OS::MessageError("Failed to rebuild window.", "Error");
+                }
+            }
+        }
         else if (e.id == Event::WindowClose && e.source == this)
         {
             EmitEvent(Event::Quit);
@@ -156,6 +173,12 @@ namespace App
             final_windowsize.x = OS::GetDisplaySize().x;
             final_windowsize.y = OS::GetDisplaySize().y;
             window_style = Leadwerks::Window::FullScreen | Leadwerks::Window::Center | Leadwerks::Window::Hidden;
+            break;
+
+        case GRAPHICSWINDOW_FULLSCREENBORDERLESS:
+            final_windowsize.x = OS::GetDisplaySize().x;
+            final_windowsize.y = OS::GetDisplaySize().y;
+            window_style = Leadwerks::Window::Center | Leadwerks::Window::Hidden;
             break;
 
         default:
@@ -263,6 +286,7 @@ namespace App
 
     void GraphicsWindow::Resize(const GraphicWindowSettings& settings)
     {
+#if 0
         // Only resize if any of the values differ...
         if (currentsettings.size != settings.size ||
             currentsettings.style != settings.style)
@@ -272,6 +296,9 @@ namespace App
                 OS::MessageError("Failed to rebuild window.", "Error");
             }
         }
+#endif
+
+        EmitEvent(Event::WindowSize, this, (int)settings.style, 0, 0, settings.size.x, settings.size.y);
     }
 
     void GraphicsWindow::Close()

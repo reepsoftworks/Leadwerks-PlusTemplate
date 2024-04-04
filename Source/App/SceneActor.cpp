@@ -100,7 +100,7 @@ namespace App
 		if (GetEntity() == NULL)
 			return defaultvalue;
 
-		if (GetEntity()->GetString(value) != "")
+		if (!GetEntity()->GetString(value).empty())
 		{
 			return GetEntity()->GetString(value);
 		}

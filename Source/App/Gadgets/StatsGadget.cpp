@@ -5,7 +5,7 @@ namespace App
 {
 	using namespace Leadwerks;
 
-	void StatsGadget::DrawUI(bool* open)
+	void StatsGadget::DrawUI()
 	{
 		static int location = 2;
 		ImGuiIO& io = ImGui::GetIO();
@@ -33,7 +33,7 @@ namespace App
             window_flags |= ImGuiWindowFlags_NoMove;
         }
         ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-        if (ImGui::Begin("StatsPanel", open, window_flags))
+        if (ImGui::Begin("StatsPanel", 0, window_flags))
         {
             //IMGUI_DEMO_MARKER("Examples/Simple Overlay");
             ImGui::Text("Stats");

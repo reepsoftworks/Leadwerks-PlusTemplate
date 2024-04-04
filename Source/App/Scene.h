@@ -27,8 +27,11 @@ namespace App
 		MapData mapdata;
 		std::vector<Leadwerks::Entity*> entities;
 		Leadwerks::Texture* loadingbackground;
+		Leadwerks::Timer* delayload;
+		bool cleartoload;
 
-		void DrawLoadingScreen();
+		void DrawLoadingScreen(const bool sync = true);
+		static bool EventCallback(const Leadwerks::Event& e, Leadwerks::Object* extra);
 	public:
 		Scene();
 		virtual ~Scene();
@@ -55,5 +58,8 @@ namespace App
 		static Scene* GetCurrent();//lua
 
 		static Scene* Create();
+
+		static std::string nextmaptoload;
+		virtual bool ProcessEvent(const Leadwerks::Event& e);
 	};
 }

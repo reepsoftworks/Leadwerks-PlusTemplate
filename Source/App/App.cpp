@@ -6,12 +6,17 @@ namespace App
 	using namespace Leadwerks;
 
 	int appmode;
-	uint64_t AppID;
-	std::map<std::string, std::string> Arguments;
-
+	std::map<std::string, std::string> Program::Arguments;
 	const int Program::NormalMode = 0;
 	const int Program::EditorMode = 1;
 	const int Program::DebugMode = 2;
+
+	std::string Program::GetTitle()
+	{
+		std::string title = Leadwerks::System::AppName;
+		if (title.empty()) title = "Leadwerks";
+		return title;
+	}
 
 	void Program::ParseArguments(int argc, const char* argv[])
 	{
@@ -87,6 +92,10 @@ namespace App
 		return true;
 	}
 
+	uint64_t Program::AppID = 0;
+	std::string Program::Author = "";
+	std::string Program:: Copyright = "";
+
 	bool Program::LoadWerkFile()
 	{
 		if (Leadwerks::System::AppName.empty()) return false;
@@ -97,6 +106,8 @@ namespace App
 
 		string id = werkfile->GetValue("AppID");
 		AppID = String::UInt64(id);
+		Author = werkfile->GetValue("Author");
+		Copyright = werkfile->GetValue("Copyright");
 
 		// TODO: Load packages listed.
 		auto packagelist = werkfile->GetValue("Packages");
@@ -106,6 +117,103 @@ namespace App
 
 		return true;
 	}
-}
 
-#include "GraphicsWindow.h"
+	bool Program::ExecuteTable(table input)
+	{
+		if (input.is_null()) return false;
+		bool ret = false;
+		if (input.is_object())
+		{
+			for (const auto p : input)
+			{
+				std::string key = p.first;
+				key = UnQuoteString(key);
+				key = String::Trim(key);
+
+				std::string val = p.second;
+				val = UnQuoteString(val);
+				val = String::Trim(val);
+
+				auto cmd = key + " " + val;
+				ret = ExecuteCommand(cmd, true);
+			}
+		}
+
+		return ret;
+	}
+
+	bool Program::ExecuteMap(std::map<std::string, std::string> input)
+	{
+		if (input.empty()) return false;
+		bool ret = false;
+		for (const auto p : input)
+		{
+			std::string key = p.first;
+			key = UnQuoteString(key);
+			key = String::Trim(key);
+
+			std::string val = p.second;
+			val = UnQuoteString(val);
+			val = String::Trim(val);
+
+			auto cmd = key + " " + val;
+			ret = ExecuteCommand(cmd, true);
+		}
+
+		return ret;
+	}
+
+	bool Program::LoadConVars(const std::string& path)
+	{
+		// Classic cfg file
+		auto stream = FileSystem::ReadFile(path);
+		if (!stream) return false;
+
+		while (!stream->EOF())
+		{
+			auto line = stream->ReadLine();
+
+			// Find the key.
+			std::vector<std::string> ln = String::Split(line, " ");
+			if (ln.size() == 2)
+			{
+				std::string key = ln[0];
+				key = UnQuoteString(key);
+				key = String::Trim(key);
+
+
+				std::string val = ln[1];
+				val = UnQuoteString(val);
+				val = String::Trim(val);
+				
+				SetConVar(key, val);
+			}
+		}
+
+		stream = NULL;
+		return true;
+	}
+
+	bool Program::SaveConVars(const std::string& path)
+	{
+		// Classic cfg file
+		auto stream = FileSystem::WriteFile(path);
+		if (!stream) return false;
+
+		for (const auto& a : *ConVar::GetConVars())
+		{
+			auto name = a.first;
+			auto val = a.second->GetValue();
+			auto flag = a.second->GetFlag();
+
+			if (flag == CVAR_SAVE)
+			{
+				auto line = name + " " + val;
+				stream->WriteLine(line);
+			}
+		}
+
+		stream = NULL;
+		return true;
+	}
+}

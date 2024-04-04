@@ -17,6 +17,11 @@ namespace App
 	class Program//lua
 	{
 	public:
+		static std::map<std::string, std::string> Arguments;
+		static uint64_t Program::AppID;
+		static std::string Program::Author;
+		static std::string Program::Copyright;
+		static std::string GetTitle();
 		static void ParseArguments(int argc, const char* argv[]);
 		static bool CheckArgument(const std::string& argument);//lua
 		static std::string CheckArgumentString(const std::string& argument, const std::string& defaultvalue);//lua
@@ -27,6 +32,13 @@ namespace App
 		static const int GetAppMode();//lua
 		static bool VendorCheck(const bool skipcheck = false);
 		static bool LoadWerkFile();
+
+
+		// Console Execution
+		static bool ExecuteTable(table input);
+		static bool ExecuteMap(std::map<std::string, std::string> input);
+		static bool LoadConVars(const std::string& path);
+		static bool SaveConVars(const std::string& path);
 	};
 
 
@@ -52,12 +64,11 @@ namespace App
 
 #include "../version.h"
 #include "GraphicsWindow.h"
-#include "AssetLoader.h"
+//#include "AssetLoader.h"
 #include "GameMenu.h"
 #include "Gadget.h"
 #include "Scene.h"
 #include "SceneActor.h"
-
 
 // Gadgets
 #include "Gadgets/StatsGadget.h"

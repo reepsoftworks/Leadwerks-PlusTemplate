@@ -69,10 +69,9 @@ namespace App
 									auto framebuffer = window->GetFramebuffer();
 									if (framebuffer)
 									{
-										gadget->PostRender(framebuffer);
+										if (b) gadget->PostRender(framebuffer);
 									}
-
-									if (!g_hideUI) gadget->DrawUI(&b);
+									if (!g_hideUI) gadget->DrawUI();
 								}
 							}
 						}
@@ -80,6 +79,18 @@ namespace App
 				}
 			}
 		}
+	}
+
+	bool Gadget::EventCallback(const Event& e, Leadwerks::Object* extra)
+	{
+		auto elem = CastObject<Gadget>(extra);
+		if (elem == NULL) return false;
+		return elem->ProcessEvent(e);
+	}
+
+	bool Gadget::ProcessEvent(const Event& e)
+	{
+		return true;
 	}
 
 	Gadget::Gadget()
@@ -93,9 +104,9 @@ namespace App
 		shown = false;
 	}
 
-	void Gadget::DrawUI(bool* open)
+	void Gadget::DrawUI()
 	{
-		ImGui::ShowDemoWindow(open);
+		ImGui::ShowDemoWindow(&shown);
 	}
 
 	void Gadget::PostRender(Leadwerks::Framebuffer* context)
@@ -115,5 +126,10 @@ namespace App
 	bool Gadget::GetHidden()
 	{
 		return !shown;
+	}
+
+	void Gadget::Listen(const int eventid, Leadwerks::Object* source)
+	{
+		ListenEvent(eventid, source, Gadget::EventCallback, this);
 	}
 }

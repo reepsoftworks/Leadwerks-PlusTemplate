@@ -79,6 +79,31 @@ namespace Leadwerks
 		Destroy();
 	}
 
+	void SplashWindow::HideInTaskbar(const bool hide)
+	{
+		HRESULT hr;
+		ITaskbarList* pTaskbarList;
+		hr = CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void**)&pTaskbarList);
+		if (hr == S_OK)
+		{
+			hr = pTaskbarList->HrInit();
+
+			if (hr == S_OK)
+			{
+				if (!hide)
+				{
+					//pTaskbarList->AddTab(hwnd);
+				}
+				else
+				{
+					pTaskbarList->DeleteTab(hwnd);
+				}
+			}
+
+			pTaskbarList->Release();
+		}
+	}
+
 	void SplashWindow::Build(const std::wstring& imagepath, const bool showintaskbar)
 	{
 #if defined (_WIN32)
@@ -117,27 +142,7 @@ namespace Leadwerks
 			Gdiplus::Rect rect = { 0, 0, (INT)image.GetWidth(), (INT)image.GetHeight() };
 			if (gfx) gfx->DrawImage(&image, rect);
 
-			HRESULT hr;
-			ITaskbarList* pTaskbarList;
-			hr = CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void**)&pTaskbarList);
-			if (hr == S_OK)
-			{
-				hr = pTaskbarList->HrInit();
-
-				if (hr == S_OK)
-				{
-					if (showintaskbar)
-					{
-						//pTaskbarList->AddTab(hwnd);
-					}
-					else
-					{
-						pTaskbarList->DeleteTab(hwnd);
-					}
-				}
-
-				pTaskbarList->Release();
-			}
+			HideInTaskbar(!showintaskbar);
 		}
 #endif
 	}

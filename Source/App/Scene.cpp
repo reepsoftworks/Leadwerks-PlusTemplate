@@ -7,7 +7,7 @@ namespace App
 {
 	using namespace Leadwerks;
 
-	static std::string currentmap = "";
+	std::string Scene::nextmaptoload = "";
 	static void MapHook(Entity* entity, Object* extra = NULL)
 	{
 		auto scene = Scene::GetCurrent();
@@ -23,7 +23,7 @@ namespace App
 			scene->WriteEntityID(entity);
 		}
 
-		AssetLoader::HighlightMissingMaterial(entity);
+		//AssetLoader::HighlightMissingMaterial(entity);
 	}
 
 	static bool LoadMapFile(const std::string& path, Object* extra = NULL)
@@ -32,103 +32,27 @@ namespace App
 		if (!result)
 		{
 			Print("Error: Failed to load " + QuoteString(path) + "...");
-			currentmap.clear();
+			Scene::nextmaptoload.clear();
 			FireCallback(CALLBACK_MAPLOADFAILED, extra, NULL);
 
 		}
 		return result;
 	}
 
-	void CC_Map(std::vector<std::string> pArgV)
-	{
-		if (pArgV.size() <= 0)
-			return;
-
-		if (pArgV[0].empty())
-			return;
-
-		auto scene = Scene::GetCurrent();
-		if (scene) scene->LoadMap(pArgV[0]);
-	}
-	static ConCommand map("map", CC_Map, CVAR_DEFAULT, "Usage: map <mapname/mappath>");
-
-	void CC_Disconnect(std::vector<std::string> pArgV)
-	{
-		auto scene = Scene::GetCurrent();
-		if (scene) scene->Clear();
-	}
-	static ConCommand disconnect("disconnect", CC_Disconnect, CVAR_DEFAULT);
-
-	void CC_Save(std::vector<std::string> pArgV)
-	{
-		if (pArgV.size() <= 0)
-			return;
-
-		if (pArgV[0].empty())
-			return;
-
-		auto scene = Scene::GetCurrent();
-		if (scene)
-		{
-			auto file = pArgV[0];
-			if (FileSystem::ExtractExt(file) != "sav")
-			{
-				file = FileSystem::StripExt(file);
-				file = file + ".sav";
-				std::wstring f = WString(file);
-				scene->Save(f);
-			}
-		}
-	}
-	static ConCommand save("save", CC_Save, CVAR_DEFAULT, "Usage: save <filepath>");
-
-	void CC_Load(std::vector<std::string> pArgV)
-	{
-		if (pArgV.size() <= 0)
-			return;
-
-		if (pArgV[0].empty())
-			return;
-
-		auto scene = Scene::GetCurrent();
-		if (scene)
-		{
-			auto file = pArgV[0];
-			if (FileSystem::ExtractExt(file) != "sav")
-			{
-				file = FileSystem::StripExt(file);
-				file = file + ".sav";
-				std::wstring f = WString(file);
-				scene->Load(f);
-			}
-		}
-	}
-	static ConCommand load("load", CC_Load, CVAR_DEFAULT, "Usage: load <filepath>");
-
-	void CC_Fov(std::vector<std::string> pArgV)
-	{
-		if (pArgV.size() <= 0)
-			return;
-
-		if (pArgV[0].empty())
-			return;
-
-		Print("Setting fov to " + pArgV[0]);
-		Settings::SetFov(String::Float(pArgV[0]));
-	}
-	static ConCommand fov("fov", CC_Fov, CVAR_DEFAULT, "Usage: fov <float>");
-
 	Scene::Scene()
 	{
 		world = NULL;
 		MainCamera = NULL;
 		loadingbackground = NULL;
+		delayload = NULL;
 		mapdata = {};
+		cleartoload = false;
 	}
 
 	Scene::~Scene()
 	{
 		mapdata.clear();
+		cleartoload = false;
 		if (loadingbackground)
 		{
 			loadingbackground->Release();
@@ -140,9 +64,15 @@ namespace App
 			world->Release();
 			world = NULL;
 		}
+
+		if (delayload)
+		{
+			delayload->Release();
+			delayload = NULL;
+		}
 	}
 
-	void Scene::DrawLoadingScreen()
+	void Scene::DrawLoadingScreen(const bool sync)
 	{
 		auto window = GraphicsWindow::GetCurrent();
 		if (window)
@@ -162,14 +92,14 @@ namespace App
 					context->DrawRect(0, 0, context->GetWidth(), context->GetHeight());
 				}
 				//if (context->GetBlendMode() != Blend::Solid) context->SetBlendMode(Blend::Solid);
-				if (!currentmap.empty()) window->Sync();
+				if (!Scene::nextmaptoload.empty() && sync) window->Sync();
 			}
 		}
 	}
 
 	void Scene::Update()
 	{
-		if (!currentmap.empty())
+		if (!Scene::nextmaptoload.empty() && cleartoload)
 		{
 			// Pause
 			Time::Pause();
@@ -180,15 +110,30 @@ namespace App
 			// Draw loading curtain
 			DrawLoadingScreen();
 
-			if (LoadMapFile(currentmap))
+			if (LoadMapFile(Scene::nextmaptoload))
 			{
 				// Assign the camera 
-				if (MainCamera == NULL) MainCamera = world->cameras.front();
-				Settings::Apply(MainCamera);
-
-				mapdata.path = currentmap;
-				mapdata.filetime = FileSystem::GetFileTime(currentmap);
-				currentmap.clear();
+				if (MainCamera == NULL)
+				{
+					int cameracount = 0;
+					for (const auto& camera : world->cameras)
+					{
+						if (camera->GetClass() == Object::CameraClass && camera->GetRenderTarget() == NULL)
+						{
+							if (cameracount == 0)
+							{
+								MainCamera = camera;
+								Settings::Apply(MainCamera);
+							}
+							cameracount++;
+							if (cameracount > 1) Print("Warning: More than one camera exist in the scene!");
+						}
+					}
+				}
+				
+				mapdata.path = Scene::nextmaptoload;
+				mapdata.filetime = FileSystem::GetFileTime(Scene::nextmaptoload);
+				Scene::nextmaptoload.clear();
 
 				FireCallback(CALLBACK_MAPLOADCOMPLETE, this, NULL);
 			}
@@ -207,7 +152,7 @@ namespace App
 		// If there's no map loaded, draw a black rect over the screen.
 		if (mapdata.path.empty())
 		{
-			DrawLoadingScreen();
+			DrawLoadingScreen(false);
 		}
 	}
 
@@ -276,17 +221,13 @@ namespace App
 			}
 		}
 
-		currentmap = test;
+		Scene::nextmaptoload = test;
 		FireCallback(CALLBACK_MAPLOAD, this, NULL);
 	}
 
 	bool Scene::InMap()
 	{
 		return !mapdata.empty();
-	}
-
-	bool pointee_is_equal(const Leadwerks::Entity* s, const Leadwerks::Entity* p) {
-		return s == p;
 	}
 
 	void Scene::WriteEntityID(Leadwerks::Entity* entity)
@@ -299,7 +240,7 @@ namespace App
 		}
 		else if (entity->GetClass() == Object::BrushClass)
 		{
-			return;
+			if (entity->GetScript().empty()) return;
 		}
 
 		// ID is <EntityName>_<PositionInTree>_<(Bool)HasActor>
@@ -344,11 +285,151 @@ namespace App
 
 	void Scene::Load(const std::wstring& path)
 	{
-		// TODO: 
 		// See if the save is newer than the map.
+		auto pathastring = WString::ToString(path);
+		if (mapdata.filetime > FileSystem::GetFileTime(pathastring))
+		{
+			Print("Error: Map file is newer than saved game.");
+			return;
+		}
+
+		// TODO
+#if 0
 		// If the map isn't currently loaded, load the map
+		auto t = JSON::Load(path);
+		std::string s = t["file"].get<string>();
+		if (mapdata.path != s)
+		{
+			LoadMap(s);
+
+			// Try it again.
+			if (mapdata.path != s)
+			{
+				Print("Error: Failed to load save as map doesn't exist.");
+				return;
+			}
+		}
+
+		// TODO: 
 		// Then the json and apply values to each entity.
-		table j3 = Table::Load(path);
+		world->SetSize(t["world"]);
+		if (t["world"]["gravity"].is_array())
+		{
+			world->SetGravity(t["world"]["gravity"][0], t["world"]["gravity"][1], t["world"]["gravity"][2]);
+		}
+
+		if (t["world"]["ambientlight"].is_array())
+		{
+			world->SetAmbientLight(t["world"]["ambientlight"][0], t["world"]["ambientlight"][1], t["world"]["ambientlight"][2], t["world"]["ambientlight"][3]);
+		}
+
+		world->mapfogmode = t["world"]["fogmode"];
+		if (t["world"]["fogcolor"].is_array())
+		{
+			world->mapfogcolor = Vec4(t["world"]["fogcolor"][0], t["world"]["fogcolor"][1], t["world"]["fogcolor"][2], t["world"]["fogcolor"][3]);
+		}
+
+		if (t["world"]["fogrange"].is_array())
+		{
+			world->mapfogrange = Vec2(t["world"]["fogrange"][0], t["world"]["fogrange"][1]);
+		}
+
+		if (t["world"]["fogangle"].is_array())
+		{
+			world->mapfogrange = Vec2(t["world"]["fogangle"][0], t["world"]["fogangle"][1]);
+		}
+
+		world->SetWaterMode(t["world"]["watermode"]);
+		world->SetWaterHeight(t["world"]["waterheight"]);
+		if (t["world"]["watercolor"].is_array())
+		{
+			world->SetWaterColor(t["world"]["watercolor"][0], t["world"]["watercolor"][1], t["world"]["watercolor"][2], t["world"]["watercolor"][3]);
+		}
+
+		if (t["entites"].is_object())
+		{
+			for (const auto& p : entities)
+			{
+				auto uuid = String::Split(GetEntityID(p), "_");
+				if (uuid.empty()) break;
+				auto name = uuid[0];
+				auto pos = uuid[1];
+				auto hasactor = uuid[2];
+
+				if (t["entites"][name] == name && t["entites"][name]["id"] == pos && t["entites"][name]["hasactor"] == hasactor)
+				{
+					auto entity = p;
+					if (t["entites"][name]["position"].is_array())
+					{
+						entity->SetPosition(t["entites"][name]["position"][0], t["entites"][name]["position"][1], t["entites"][name]["position"][2]);
+					}
+
+					if (t["entites"][name]["rotation"].is_array())
+					{
+						entity->SetPosition(t["entites"][name]["rotation"][0], t["entites"][name]["rotation"][1], t["entites"][name]["rotation"][2]);
+					}
+
+					if (t["entites"][name]["scale"].is_array())
+					{
+						entity->SetPosition(t["entites"][name]["scale"][0], t["entites"][name]["scale"][1], t["entites"][name]["scale"][2]);
+					}
+
+					if (t["entites"][name]["color"].is_array())
+					{
+						entity->SetColor(t["entites"][name]["color"][0], t["entites"][name]["color"][1], t["entites"][name]["color"][2], t["entites"][name]["color"][1], t["entites"][name]["color"][3]);
+					}
+					entity->SetIntensity(t["entites"][name]["intensity"]);
+
+					if (t["entites"][name]["colorspec"].is_array())
+					{
+						entity->SetColor(t["entites"][name]["colorspec"][0], t["entites"][name]["colorspec"][1], t["entites"][name]["colorspec"][2], t["entites"][name]["colorspec"][1], t["entites"][name]["colorspec"][3], COLOR_SPECULAR);
+					}
+					entity->SetIntensity(t["entites"][name]["intensityspec"], COLOR_DIFFUSE);
+
+					if (t["entites"][name]["coloredit"].is_array())
+					{
+						entity->SetColor(t["entites"][name]["coloredit"][0], t["entites"][name]["coloredit"][1], t["entites"][name]["coloredit"][2], t["entites"][name]["coloredit"][1], t["entites"][name]["coloredit"][3]);
+					}
+					
+					entity->SetViewRange(t["entites"][name]["viewrange"]);
+					entity->SetShadowMode(t["entites"][name]["shadows"]);
+					entity->SetOcclusionCullingMode(t["entites"][name]["occlusionculling"]);
+
+					// Physics
+					entity->SetPhysicsMode(t["entites"][name]["physicsmode"]);
+					entity->SetCollisionType(t["entites"][name]["collisiontype"]);
+					entity->SetMass(t["entites"][name]["mass"]);
+					entity->SetCharacterControllerAngle(t["entites"][name]["characterangle"]);
+					entity->SetSweptCollisionMode(t["entites"][name]["sweptcollision"]);
+					entity->SetNavigationMode(t["entites"][name]["navmode"]);
+
+					// TODO: Apply friction and such. We can't do this now as there's no refs for this in the entity's header...
+
+					// Actor
+					if (t["entites"][name]["actor"].is_object())
+					{
+						auto actor = entity->GetActor();
+						if (actor == NULL)
+						{
+							Print("Error: Failed to load actor from save file..");
+						}
+						else
+						{
+							if (t["entites"][name]["actor"]["data"].is_object())
+							{
+								auto sceneactor = dynamic_cast<SceneActor*>(actor);
+								if (sceneactor)
+								{
+									sceneactor->Load(t["entites"][name]["actor"]["data"]);
+								}		
+							}
+						}
+					}
+
+				}
+			}
+		}
+#endif
 	}
 
 	void Scene::Save(const std::wstring& path)
@@ -374,7 +455,7 @@ namespace App
 		t["world"]["ambientlight"][2] = world->GetAmbientLight().b;
 		t["world"]["ambientlight"][3] = world->GetAmbientLight().a;
 
-		t["world"]["fogmode"] = true;
+		t["world"]["fogmode"] = world->mapfogmode;
 		t["world"]["fogcolor"] = nlohmann::json::array();
 		t["world"]["fogcolor"][0] = world->mapfogcolor.r;
 		t["world"]["fogcolor"][1] = world->mapfogcolor.g;
@@ -425,7 +506,7 @@ namespace App
 			t["entites"][name]["rotation"][1] = rotation.y;
 			t["entites"][name]["rotation"][2] = rotation.z;
 
-			Vec3 scale = p->GetRotation();
+			Vec3 scale = p->GetScale();
 			t["entites"][name]["scale"] = nlohmann::json::array();
 			t["entites"][name]["scale"][0] = scale.x;
 			t["entites"][name]["scale"][1] = scale.y;
@@ -456,7 +537,7 @@ namespace App
 			t["entites"][name]["coloredit"][3] = coloredit.a;
 
 			t["entites"][name]["viewrange"] = p->GetViewRange();
-			t["entites"][name]["shaodows"] = p->GetShadowMode();
+			t["entites"][name]["shadows"] = p->GetShadowMode();
 			t["entites"][name]["occlusionculling"] = p->GetOcclusionCullingMode();
 
 			// Physics
@@ -466,7 +547,7 @@ namespace App
 			t["entites"][name]["characterangle"] = p->GetCharacterControllerAngle();
 			t["entites"][name]["sweptcollision"] = p->GetSweptCollisionMode();
 			t["entites"][name]["navmode"] = p->GetNavigationMode();
-			// TODO: get friction and such...
+			// TODO: get friction and such. We can't do this now as there's no refs for this in the entity's header...
 
 			// Actors
 			auto actor = p->GetActor();
@@ -476,12 +557,17 @@ namespace App
 				if (sceneactor)
 				{
 					t["entites"][name]["actor"] = nlohmann::json::object();
-					sceneactor->Save(t["entites"][name]["actor"]);
+					t["entites"][name]["actor"]["class"] = p->GetString("actor");
+
+					// FIXME!
+					t["entites"][name]["actor"]["data"] = nlohmann::json::object();
+					sceneactor->Save(t["entites"][name]["actor"]["data"]);
 				}
 			}
 		}
 
 		JSON::Save(t, file);
+		Print("Game saved...");
 	}
 
 	Leadwerks::World* Scene::GetWorld()
@@ -495,6 +581,28 @@ namespace App
 		return currentscene;
 	}
 
+	bool Scene::EventCallback(const Event& e, Leadwerks::Object* extra)
+	{
+		auto elem = CastObject<Scene>(extra);
+		if (elem == NULL) return false;
+		return elem->ProcessEvent(e);
+	}
+
+	bool Scene::ProcessEvent(const Leadwerks::Event& e)
+	{
+		if (e.id == EVENT_STARTRENDERER)
+		{
+			delayload = Timer::Create(2000);		
+		}
+		else if (e.id == Event::TimerTick && e.source == delayload)
+		{
+			cleartoload = true;
+			delayload->Release();
+			delayload = NULL;
+		}
+		return true;
+	}
+
 	Scene* Scene::Create()
 	{
 		if (currentscene)
@@ -506,6 +614,8 @@ namespace App
 		currentscene = new Scene();
 		currentscene->world = World::Create();
 		currentscene->loadingbackground = AssetLoader::DefaultTexture();
+		ListenEvent(EVENT_STARTRENDERER, NULL, Scene::EventCallback, currentscene);
+		ListenEvent(Event::TimerTick, currentscene->delayload, SceneActor::EventCallback, currentscene);
 		return currentscene;
 	}
 }

@@ -20,7 +20,7 @@ namespace App
 		~ConsoleGadget();
 
 		void AddLog(const char* fmt, ...);
-		virtual void DrawUI(bool* open);
+		virtual void DrawUI();
 		int TextEditCallback(ImGuiInputTextCallbackData* data);
 	};
 }

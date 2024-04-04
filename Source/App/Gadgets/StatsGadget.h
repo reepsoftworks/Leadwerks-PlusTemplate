@@ -6,6 +6,6 @@ namespace App
 	class StatsGadget : public Gadget
 	{
 	public:
-		virtual void DrawUI(bool* open);
+		virtual void DrawUI();
 	};
 }

@@ -25,16 +25,8 @@ namespace App
 				texture = NULL;
 			}
 
-			// Move this in a loader.
 			auto ext = FileSystem::ExtractExt(imagepath);
-			if (ext == "tex")
-			{
-				texture = Texture::Load(path);
-			}
-			else
-			{
-				texture = ImageTexture::Load(path);
-			}
+			texture = AssetLoader::LoadTexture(path);
 
 			imagepath = path;
 		}
@@ -57,7 +49,7 @@ namespace App
 		this->size = size;
 	}
 
-	void TextureGadget::DrawUI(bool* open)
+	void TextureGadget::DrawUI()
 	{
 #if 0
 		if (imagepath.empty()) return;

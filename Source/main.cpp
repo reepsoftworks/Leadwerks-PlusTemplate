@@ -1,9 +1,31 @@
 #include "pch.h"
-#include "App/App.h"
-#include "ActorSystem.h"
+#include "SampleApp.h"
 
 using namespace Leadwerks;
 using namespace App;
+
+int main(int argc, const char* argv[])
+{
+    // Parse Arguments
+    Program::ParseArguments(argc, argv);
+
+    // Start application
+    auto app = new SampleApp();
+    if (!app->Start()) return 1;
+
+    // Game Loop
+    static bool running = true;
+    while (running)
+    {
+        running = app->Update();
+    }
+
+    return 0;
+}
+
+#if 0
+#include "App/App.h"
+#include "ActorSystem.h"
 bool EventCallback(const Event& e, Object* extra)
 {
     if (e.id == Event::WindowMove)
@@ -121,7 +143,7 @@ int main(int argc, const char* argv[])
     return true;
 }
 
-#if 0
+
 int main(int argc, const char argv[])
 {
 

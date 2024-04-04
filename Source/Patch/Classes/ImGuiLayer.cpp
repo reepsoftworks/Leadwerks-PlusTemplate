@@ -34,7 +34,9 @@ namespace Leadwerks
 				ImGui_ImplOpenGL3_Init("#version 400");
 			}
 			else
-			{
+			{ 
+				// If we're in the middle of a frame, end it!
+				if (framestarted) EndFrame();
 				framestarted = false;
 				ImGui::DestroyContext();
 			}

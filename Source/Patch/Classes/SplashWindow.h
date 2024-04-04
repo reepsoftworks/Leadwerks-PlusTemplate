@@ -4,7 +4,8 @@
 namespace Leadwerks
 {
 	class SplashWindow : public Object
-	{	
+	{
+	protected:
 #if defined (_WIN32)
 		HWND hwnd;
 		HDC hdc;
@@ -12,6 +13,8 @@ namespace Leadwerks
 #endif
 		virtual void Destroy();
 		virtual void Build(const std::wstring& imagepath, const bool showintaskbar = false);
+		void HideInTaskbar(const bool hide);
+
 	public:
 		virtual ~SplashWindow();
 		virtual void Close();

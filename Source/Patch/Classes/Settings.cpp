@@ -14,6 +14,46 @@ namespace Leadwerks
     float fov = 70.0f;
     Camera* MainCamera;
 
+    static Setting GetMSAA()
+    {
+        return msaa;
+    }
+
+    static Setting GetLightQuality()
+    {
+        return light;
+    }
+
+    static Setting GetShadowQuality()
+    {
+        return shadow;
+    }
+
+    static Setting GetTessellationQuality()
+    {
+        return tessellation;
+    }
+
+    static Setting GetTerrainQuality()
+    {
+        return terrain;
+    }
+
+    static Setting GetWaterQuality()
+    {
+        return water;
+    }
+
+    static bool GetHDR()
+    {
+        return hdr;
+    }
+
+    static float GetFov()
+    {
+        return fov;
+    }
+
 	void Settings::SetMSAA(Setting setting)
 	{
         msaa = setting;
@@ -147,24 +187,27 @@ namespace Leadwerks
     void Settings::SetTerrainQuality(Setting setting)
     {
         terrain = setting;
-        switch (setting)
+        if (MainCamera)
         {
-        case SETTING_ULTRA:
-        case SETTING_HIGH:
-            MainCamera->GetWorld()->SetTerrainQuality(2);
-            break;
+            switch (setting)
+            {
+            case SETTING_ULTRA:
+            case SETTING_HIGH:
+                MainCamera->GetWorld()->SetTerrainQuality(2);
+                break;
 
-        case SETTING_MEDIUM:
-            MainCamera->GetWorld()->SetTerrainQuality(1);
-            break;
+            case SETTING_MEDIUM:
+                MainCamera->GetWorld()->SetTerrainQuality(1);
+                break;
 
-        case SETTING_LOW:
-        case SETTING_DISABLED:
-            MainCamera->GetWorld()->SetTerrainQuality(0);
-            break;
+            case SETTING_LOW:
+            case SETTING_DISABLED:
+                MainCamera->GetWorld()->SetTerrainQuality(0);
+                break;
 
-        default:
-            break;
+            default:
+                break;
+            }
         }
     }
 
