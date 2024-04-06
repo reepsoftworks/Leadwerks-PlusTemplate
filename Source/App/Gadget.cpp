@@ -27,7 +27,16 @@ namespace App
 
 	void Gadget::HideUI(const bool b)
 	{
+		if (g_hideUI == b) return;
+		bool oldstate = g_hideUI;
 		g_hideUI = b;
+
+		if (oldstate == true && g_hideUI == false)
+		{
+			auto window = GraphicsWindow::GetCurrent();
+			if (window) window->GetImGUI()->EndFrame();
+		}
+		
 	}
 
 	void Gadget::SetOrder(const int layer)

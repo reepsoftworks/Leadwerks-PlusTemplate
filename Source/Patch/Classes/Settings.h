@@ -25,6 +25,7 @@ namespace Leadwerks
 		static float GetFov();
 
 		static void Apply(Camera* camera);
+		static std::string GetSettingString(Setting setting);
 	};
 
 	extern Camera* MainCamera;

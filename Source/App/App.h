@@ -3,15 +3,37 @@
 
 namespace App
 {
+	// App Callback enum
 	enum
 	{
+		// Post Render callback for drawing Gadgets.
 		CALLBACK_POSTRENDER = 10,
-		CALLBACK_ASSETLOADED,
+
+		// Callback used when the pause state is changed.
 		CALLBACK_PAUSE,
-		CALLBACK_MAPLOAD,
-		CALLBACK_MAPLOADCOMPLETE,
-		CALLBACK_MAPLOADFAILED,
-		CALLBACK_MAPCLEAR
+
+		// Fired durning the map loading hook. USE THIS FOR DRAWING!
+		CALLBACK_LOADINGSCREEN,
+
+		// Fired when the scene is ready to start taking map load requests.
+		// This is always fired called when the delay timer completes regardless
+		// if there's a map pending to be loaded. Check Scene::nextmaptoload 
+		// Check if there's anything pending.
+		CALLBACK_SCENEREADY,
+
+		// Called right after we get told to load something.
+		// Check Scene::nextmaptoload to see what's being loaded!
+		CALLBACK_SCENELOAD,
+
+		// Callback for when the scene has successfully loaded.
+		// This is used for Scene Actors for calling their Start() function.
+		CALLBACK_SCENECOMPLETE,
+
+		// Callback for when the map has NOT successfully loaded.
+		CALLBACK_SCENEFAILED,
+
+		// Used for then the map has been cleared.
+		CALLBACK_SCENECLEAR
 	};
 
 	class Program//lua
@@ -40,37 +62,20 @@ namespace App
 		static bool LoadConVars(const std::string& path);
 		static bool SaveConVars(const std::string& path);
 	};
-
-
-	/*
-	extern std::map<std::string, std::string> Arguments;
-	extern void ParseArguments(int argc, const char* argv[]);
-	extern bool CheckArgument(const std::string& argument);
-	extern std::string CheckArgumentString(const std::string& argument, const std::string& defaultvalue);
-	extern int CheckArgumentValue(const std::string& argument, const int defaultvalue);
-
-	enum AppMode
-	{
-		MODE_NORMAL = 0,
-		MODE_EDITOR,
-		MODE_DEBUG
-	};
-
-	extern AppMode GetAppMode();
-	extern bool VendorCheck(const bool skipcheck = false);
-	extern bool LoadWerkFile();
-	*/
 }
 
 #include "../version.h"
 #include "GraphicsWindow.h"
-//#include "AssetLoader.h"
 #include "GameMenu.h"
 #include "Gadget.h"
 #include "Scene.h"
 #include "SceneActor.h"
+#include "Translator.h"
 
 // Gadgets
 #include "Gadgets/StatsGadget.h"
 #include "Gadgets/ConsoleGadget.h"
-#include "Gadgets/TextureGadget.h"
+#include "Gadgets/SettingsGadget.h"
+
+// UI
+#include "UI/UIGadget.h"

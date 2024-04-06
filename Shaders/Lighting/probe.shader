@@ -102,8 +102,8 @@ void main(void)
 #define AMBIENT_ROUGHNESS 8 //5
 #define SPECULAR_ROUGHNESS 0
 
-//#define PARALLAX_CUBEMAP 1
-//#define ADDITIVE_BLEND
+#define PARALLAX_CUBEMAP 1
+#define ADDITIVE_BLEND
 
 uniform vec4 lighting_ambient;
 

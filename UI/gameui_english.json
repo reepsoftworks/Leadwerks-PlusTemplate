@@ -1,0 +1,10 @@
+{
+    "language": "English",
+    "tokens":
+    {
+        "#GameUI_GameMenu_ResumeGame": "Resume Game",
+        "#GameUI_GameMenu_NewGame": "New Game",
+        "#GameUI_GameMenu_Options": "Options",
+        "#GameUI_GameMenu_Quit": "Quit"
+    }
+}

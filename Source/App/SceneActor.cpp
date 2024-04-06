@@ -13,6 +13,7 @@ namespace App
 
 	SceneActor::~SceneActor()
 	{
+		RemoveCallback(this);
 		extra = NULL;
 		Actor::~Actor();
 	}
@@ -25,7 +26,7 @@ namespace App
 
 	void SceneActor::Attach()
 	{
-		SetCallback(CALLBACK_MAPLOADCOMPLETE, this, SceneActorCallback);
+		SetCallback(CALLBACK_SCENECOMPLETE, this, SceneActorCallback);
 	}
 
 	void SceneActor::Detach()

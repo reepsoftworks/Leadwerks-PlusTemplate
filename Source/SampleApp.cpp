@@ -24,25 +24,25 @@ static ConVar screenheight("screenheight", "720", CVAR_SAVE, "Usage: screenheigh
 
 // TODO: move to user app directory...
 #define USER_CONFIG "config.cfg"
+#define USER_CONFIGEDITOR "config_editor.cfg"
+
+#define PATH_SPLASH L"UI/splash.bmp"
 
 SampleApp::SampleApp()
 {
 	splashwindow = NULL;
 	window = NULL;
-	windowsettings = GraphicWindowSettings();
 	scene = NULL;
 
-	stats = NULL;
-	console = NULL;
+	ui = NULL;
 }
 
 SampleApp::~SampleApp()
 {
-	SafeRelease(splashwindow);
-	SafeRelease(window);
-	SafeRelease(scene);
-	SafeRelease(stats);
-	SafeRelease(console);
+	FreeObject(splashwindow);
+	FreeObject(window);
+	FreeObject(scene);
+	FreeObject(ui);
 }
 
 bool SampleApp::Start()
@@ -61,7 +61,7 @@ bool SampleApp::Start()
 	// Create splash window
 	if (!Program::CheckArgument("nosplash"))
 	{
-		splashwindow = SplashWindow::Create(L"splash.bmp");
+		splashwindow = SplashWindow::Create(PATH_SPLASH);
 	}
 
 	// Dump Command line into convars/commands.
@@ -69,28 +69,34 @@ bool SampleApp::Start()
 	Program::ExecuteMap(Program::Arguments);
 
 	// Create the graphics window
-	windowsettings.size.x = screenwidth.GetInt();
-	windowsettings.size.y = screenheight.GetInt();
-	windowsettings.style = (GraphicWindowStyles)windowmode.GetInt();
+	GraphicWindowSettings windowsettings = GraphicWindowSettings();
+	const bool editormode = (bool)(Program::GetAppMode() == Program::EditorMode);
+	if (!editormode)
+	{
+		windowsettings.size.x = screenwidth.GetInt();
+		windowsettings.size.y = screenheight.GetInt();
+		windowsettings.style = (GraphicWindowStyles)windowmode.GetInt();
+	}
+	else
+	{
+		// Load an editor config if one exists
+		auto config = Config::Load(USER_CONFIGEDITOR);
+		if (config != NULL)
+		{
+			windowsettings.size.x = String::Int(config->GetValue("screenwidth"));
+			windowsettings.size.y = String::Int(config->GetValue("screenheight"));
+			windowsettings.style = (GraphicWindowStyles)String::Int(config->GetValue("windowmode"));
+			config->Release();
+			config = NULL;
+		}
+	}
+
 	window = GraphicsWindow::Create(Program::GetTitle(), windowsettings, splashwindow);
 	if (!window)
 	{
 		OS::MessageError("Error", "Failed to create the grapics window!");
 		return false;
 	}
-
-	// Init our gadgets
-	stats = CreateGadget<StatsGadget>(window);
-	console = CreateGadget<ConsoleGadget>(window);
-
-	if (!stats || !console)
-	{
-		OS::MessageError("Error", "Failed to create one or more gadgets!");
-		return false;
-	}
-
-	// Hide the console.
-	console->Hide();
 
 	// Scene
 	scene = Scene::Create();
@@ -99,6 +105,9 @@ bool SampleApp::Start()
 		OS::MessageError("Error", "Failed to create scene!");
 		return false;
 	}
+
+	// Create our UI.
+	ui = SampleUI::Create(window);
 
 	return true;
 }
@@ -117,35 +126,39 @@ bool SampleApp::Update()
 		}
 	}
 
-	// Allow the console in dev/debug modes
+	// Allow special features for debug/devmode.
 	auto appmode = Program::GetAppMode();
 	if (appmode > Program::NormalMode)
 	{
 		if (window->KeyHit(Key::F1)) // TODO: Replace me with the input system.
 		{
-			bool h = console->GetHidden();
-			if (!h)
-				console->Hide();
+			ui->ToggleConsole();
+		}
+	
+		// Fullscreen toggle.
+		if (window->KeyHit(Key::F11)) // TODO: Replace me with the input system.
+		{
+			bool fullscreen = false;
+			GraphicWindowSettings windowsettings = window->CurrentSettings();
+			if (windowsettings.style == GRAPHICSWINDOW_FULLSCREENNATIVE) fullscreen = true;
+			if (!fullscreen)
+			{
+				windowsettings.style = GRAPHICSWINDOW_FULLSCREENNATIVE;
+				//fullscreen = true;
+			}
 			else
-				console->Show();
+			{
+				windowsettings.style = GRAPHICSWINDOW_TITLEBAR;
+				//fullscreen = false;
+			}
+			window->Resize(windowsettings);
 		}
-	}
 
-	// Fullscreen toggle.
-	if (window->KeyHit(Key::F11)) // TODO: Replace me with the input system.
-	{
-		static bool fullscreen = false;
-		if (!fullscreen)
+		// Terminate
+		if (window->KeyHit(Key::End)) // TODO: Replace me with the input system.
 		{
-			windowsettings.style = GRAPHICSWINDOW_FULLSCREENNATIVE;
-			fullscreen = true;
+			EmitEvent(Event::Quit);
 		}
-		else
-		{
-			windowsettings.style = GRAPHICSWINDOW_TITLEBAR;
-			fullscreen = false;
-		}
-		window->Resize(windowsettings);
 	}
 
 	scene->Update();
@@ -155,6 +168,16 @@ bool SampleApp::Update()
 
 void SampleApp::Shutdown()
 {
-	// Save convars.
-	Program::SaveConVars(USER_CONFIG);
+	// Push window settings to cvars so they are saved.
+	// Skip saving these settings if we're in editor mode.
+	if (window && (Program::GetAppMode() != Program::EditorMode))
+	{
+		auto currentwindowsettings = window->CurrentSettings();
+		SetConVar("screenwidth", String(currentwindowsettings.size.x));
+		SetConVar("screenheight", String(currentwindowsettings.size.y));
+		SetConVar("windowmode", String(currentwindowsettings.style));
+
+		// Save convars.
+		Program::SaveConVars(USER_CONFIG);
+	}
 }

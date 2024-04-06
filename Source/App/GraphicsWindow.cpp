@@ -539,6 +539,11 @@ namespace App
         return ui;
     }
 
+    Leadwerks::ImGuiLayer* GraphicsWindow::GetImGUI()
+    {
+        return imgui;
+    }
+
     GraphicsWindow* GraphicsWindow::Create(const std::string& title, const GraphicWindowSettings& settings, Leadwerks::SplashWindow* splashwindow)
     {
         if (!current)

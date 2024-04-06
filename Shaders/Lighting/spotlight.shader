@@ -129,10 +129,6 @@ float positionToDepth(in float z, in vec2 depthrange) {
 	return (depthrange.x / (z / depthrange.y) - depthrange.y) / -(depthrange.y - depthrange.x);
 }
 
-float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
 float shadowLookup(in sampler2DShadow shadowmap, in vec3 shadowcoord, in float offset)
 {
 	float f=0.0;
@@ -299,9 +295,6 @@ void main(void)
 		fragData0 += attenuation * (diffuse * lightcolor + specular) * (1.0-fogeffect);
 		
 		//fragData0.xyz = screencoord;
-
-		//Removes banding
-		//fragData0 += rand(lightnormal.xy) * 0.04 - 0.02;
 	}
 	
 	//----------------------------------------------------------------------

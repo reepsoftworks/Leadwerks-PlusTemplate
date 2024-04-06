@@ -48,6 +48,9 @@ namespace Leadwerks
 		static iVec2 GetDisplaySize();
 		static float GetDisplayScale();
 		static std::vector<iVec2> GetDisplayModes();
+		static std::vector<std::string> GetDisplayOptions();
+		static std::string GetDisplayString(const int i);
+		static int FindDisplayOption(const std::string& SizeXxSizeY);
 		static bool SetWindowTitlebarTheme(Leadwerks::Window* source, const int theme);
 		static bool SetWindowIcon(Leadwerks::Window* source, const int id = 101);
 

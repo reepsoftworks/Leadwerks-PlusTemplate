@@ -1,0 +1,21 @@
+//Leadwerks Material File
+
+blendmode=0
+castshadows=1
+zsort=0
+cullbackfaces=1
+depthtest=1
+pickmode=1
+depthmask=1
+diffuse=1.00000000,1.00000000,1.00000000,1.00000000
+specular=0.000000000,0.000000000,0.000000000,0.501960814
+alwaysuseshader=0
+roughness=0.50000000000000000
+mappingscale=1.00000000,1.00000000,1.00000000
+drawmode=-1
+
+shader="./parallax.shader"
+texture0="./brickwall_d.tex"
+texture1="./brickwall_d_dot3.tex"
+texture2="./brickwall_s.tex"
+texture3="./brickwall_h.tex"

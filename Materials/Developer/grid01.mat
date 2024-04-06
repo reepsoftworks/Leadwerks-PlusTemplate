@@ -8,10 +8,11 @@ depthtest=1
 pickmode=1
 depthmask=1
 diffuse=1.00000000,1.00000000,1.00000000,1.00000000
-specular=0.501960814,0.501960814,0.501960814,0.501960814
+specular=0.000000000,0.000000000,0.000000000,0.501960814
 alwaysuseshader=0
-roughness=0.50000000000000000
+roughness=1.0000000000000000
 mappingscale=1.00000000,1.00000000,1.00000000
 drawmode=-1
 
+shader="Shaders/Model/Blinn-Phong/diffuse.shader"
 texture0="materials/developer/textures/grid01.tex"

@@ -19,8 +19,8 @@ namespace App
 		virtual void DrawUI();
 		virtual void PostRender(Leadwerks::Framebuffer* context);
 
-		void Show();
-		void Hide();
+		virtual void Show();
+		virtual void Hide();
 		bool GetHidden();
 
 		void SetOrder(const int layer);

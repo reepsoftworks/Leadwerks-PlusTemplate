@@ -21,6 +21,8 @@ namespace App
 			}
 
 			scene->WriteEntityID(entity);
+
+			scene->DrawLoadingScreen(true);
 		}
 
 		//AssetLoader::HighlightMissingMaterial(entity);
@@ -33,7 +35,7 @@ namespace App
 		{
 			Print("Error: Failed to load " + QuoteString(path) + "...");
 			Scene::nextmaptoload.clear();
-			FireCallback(CALLBACK_MAPLOADFAILED, extra, NULL);
+			FireCallback(CALLBACK_SCENEFAILED, extra, NULL);
 
 		}
 		return result;
@@ -47,12 +49,14 @@ namespace App
 		delayload = NULL;
 		mapdata = {};
 		cleartoload = false;
+		isloading = true;
 	}
 
 	Scene::~Scene()
 	{
 		mapdata.clear();
 		cleartoload = false;
+		isloading = false;
 		if (loadingbackground)
 		{
 			loadingbackground->Release();
@@ -80,6 +84,8 @@ namespace App
 			auto context = window->GetFramebuffer();
 			if (context)
 			{
+				//context->Clear();
+
 				//if (context->GetBlendMode() != Blend::Alpha) context->SetBlendMode(Blend::Alpha);
 				if (loadingbackground)
 				{
@@ -88,9 +94,14 @@ namespace App
 				}
 				else
 				{
+					// If there's no texture, draw a black rect.
 					context->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
 					context->DrawRect(0, 0, context->GetWidth(), context->GetHeight());
 				}
+
+				// Draw anything else on top.
+				FireCallback(CALLBACK_LOADINGSCREEN, this, NULL);
+
 				//if (context->GetBlendMode() != Blend::Solid) context->SetBlendMode(Blend::Solid);
 				if (!Scene::nextmaptoload.empty() && sync) window->Sync();
 			}
@@ -104,11 +115,12 @@ namespace App
 			// Pause
 			Time::Pause();
 
-			// Hide UI Gadgets
-			Gadget::HideUI(true);
+			// Clear the scene.
+			Clear();
 
 			// Draw loading curtain
-			DrawLoadingScreen();
+			isloading = true;
+			DrawLoadingScreen(true);
 
 			if (LoadMapFile(Scene::nextmaptoload))
 			{
@@ -135,11 +147,14 @@ namespace App
 				mapdata.filetime = FileSystem::GetFileTime(Scene::nextmaptoload);
 				Scene::nextmaptoload.clear();
 
-				FireCallback(CALLBACK_MAPLOADCOMPLETE, this, NULL);
-			}
+				PostLoadModifications();
 
-			// Show UI Gadgets
-			Gadget::HideUI(false);
+				// Show UI Gadgets
+				Gadget::HideUI(false);
+
+				isloading = false;
+				FireCallback(CALLBACK_SCENECOMPLETE, this, NULL);
+			}
 
 			// Resume
 			Time::Resume();
@@ -152,6 +167,10 @@ namespace App
 		// If there's no map loaded, draw a black rect over the screen.
 		if (mapdata.path.empty())
 		{
+			// Show UI Gadgets
+			Gadget::HideUI(false);
+
+			isloading = false;
 			DrawLoadingScreen(false);
 		}
 	}
@@ -192,8 +211,6 @@ namespace App
 	{
 		if (!mapdata.path.empty())
 		{
-			FireCallback(CALLBACK_MAPCLEAR, this, NULL);
-
 			if (world->GetSkybox() != NULL)
 			{
 				world->skybox->Release();
@@ -201,8 +218,10 @@ namespace App
 				//world->SetSkybox(AssetLoader::DefaultSkybox());
 			}
 
-			world->Clear();
+			world->Clear(true);
 			mapdata.clear();
+
+			FireCallback(CALLBACK_SCENECLEAR, this, NULL);
 		}
 	}
 
@@ -221,13 +240,26 @@ namespace App
 			}
 		}
 
+		// Hide UI Gadgets
+		Gadget::HideUI(true);
+
 		Scene::nextmaptoload = test;
-		FireCallback(CALLBACK_MAPLOAD, this, NULL);
+		FireCallback(CALLBACK_SCENELOAD, this, NULL);
 	}
 
 	bool Scene::InMap()
 	{
 		return !mapdata.empty();
+	}
+
+	bool Scene::IsLoading()
+	{
+		//if (!cleartoload) return true;
+		return isloading;
+	}
+
+	void Scene::PostLoadModifications()
+	{
 	}
 
 	void Scene::WriteEntityID(Leadwerks::Entity* entity)
@@ -575,6 +607,20 @@ namespace App
 		return world;
 	}
 
+	void Scene::SetLoadingBackground(Leadwerks::Texture* texture)
+	{
+		// If it's the same pointer, don't bother.
+		if (loadingbackground = texture) return;
+
+		FreeObject(loadingbackground);
+		loadingbackground = texture;
+	}
+
+	Leadwerks::Texture* Scene::GetLoadingBackground()
+	{
+		return loadingbackground;
+	}
+
 	Scene* Scene::currentscene = NULL;
 	Scene* Scene::GetCurrent()
 	{
@@ -592,13 +638,14 @@ namespace App
 	{
 		if (e.id == EVENT_STARTRENDERER)
 		{
-			delayload = Timer::Create(2000);		
+			delayload = Timer::Create(2500);		
 		}
 		else if (e.id == Event::TimerTick && e.source == delayload)
 		{
-			cleartoload = true;
 			delayload->Release();
 			delayload = NULL;
+			cleartoload = true;
+			FireCallback(CALLBACK_SCENEREADY, this, NULL);
 		}
 		return true;
 	}
@@ -613,7 +660,7 @@ namespace App
 
 		currentscene = new Scene();
 		currentscene->world = World::Create();
-		currentscene->loadingbackground = AssetLoader::DefaultTexture();
+		//currentscene->loadingbackground = AssetLoader::DefaultTexture();
 		ListenEvent(EVENT_STARTRENDERER, NULL, Scene::EventCallback, currentscene);
 		ListenEvent(Event::TimerTick, currentscene->delayload, SceneActor::EventCallback, currentscene);
 		return currentscene;

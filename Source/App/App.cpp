@@ -115,6 +115,9 @@ namespace App
 		{
 		}
 
+		werkfile->Release();
+		werkfile = NULL;
+
 		return true;
 	}
 
@@ -156,6 +159,10 @@ namespace App
 			val = UnQuoteString(val);
 			val = String::Trim(val);
 
+			// Fix any paths given.
+			if (FileSystem::GetFileType(val) != 0)
+				val = FileSystem::FixPath(val);
+
 			auto cmd = key + " " + val;
 			ret = ExecuteCommand(cmd, true);
 		}
@@ -181,11 +188,14 @@ namespace App
 				key = UnQuoteString(key);
 				key = String::Trim(key);
 
-
 				std::string val = ln[1];
 				val = UnQuoteString(val);
 				val = String::Trim(val);
 				
+				// Fix any paths given.
+				if (FileSystem::GetFileType(val) != 0)
+					val = FileSystem::FixPath(val);
+
 				SetConVar(key, val);
 			}
 		}

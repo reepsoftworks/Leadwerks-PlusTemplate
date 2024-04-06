@@ -32,7 +32,8 @@ namespace Leadwerks
 		static bool Save(std::string path);
 	};
 
-	template <typename T> void SetConVar(const std::string& name, const T value)
+
+	inline void SetConVar(const std::string& name, const std::string& value)
 	{
 		if (ConVar::Find(name))
 		{
@@ -40,4 +41,16 @@ namespace Leadwerks
 			if (cmd) cmd->SetValue(value);
 		}
 	}
+	
+	/*
+	template <typename T> void SetConVar(const std::string& name, const T value)
+	{
+		if (ConVar::Find(name))
+		{
+			std::string v = to_string(value);
+			auto cmd = (*ConVar::GetConVars())[name];
+			if (cmd) cmd->SetValue(v);
+		}
+	}
+	*/
 }

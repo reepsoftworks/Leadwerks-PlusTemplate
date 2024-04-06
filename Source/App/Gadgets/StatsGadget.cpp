@@ -5,6 +5,16 @@ namespace App
 {
 	using namespace Leadwerks;
 
+    void StatsGadget::SetMode(const int statmode)
+    {
+        mode = statmode;
+
+        if (mode == 0)
+            Hide();
+        else
+            Show();
+    }
+
 	void StatsGadget::DrawUI()
 	{
 		static int location = 2;
@@ -33,7 +43,7 @@ namespace App
             window_flags |= ImGuiWindowFlags_NoMove;
         }
         ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-        if (ImGui::Begin("StatsPanel", 0, window_flags))
+        if (ImGui::Begin("StatsGadget", 0, window_flags))
         {
             //IMGUI_DEMO_MARKER("Examples/Simple Overlay");
             ImGui::Text("Stats");
@@ -42,37 +52,60 @@ namespace App
             auto world = World::GetCurrent();
             if (world)
             {
-                float framerate = Time::UPS();
-                string str = std::string("FPS: " + String(framerate));
-                if (framerate < 30)
-                    ImGui::TextColored(ImVec4(0.85f, 0.25f, 0.25f, 1.0f), str.c_str());
-                else if (framerate < 55 && framerate > 30)
-                    ImGui::TextColored(ImVec4(1.0f, 0.56f, 0.0f, 1.0f), str.c_str());
-                else
-                    ImGui::TextColored(ImVec4(0.07f, 0.55f, 0.0f, 1.0f), str.c_str());
+                if (mode > 0)
+                {
+                    float framerate = Time::UPS();
+                    string str = std::string("FPS: " + String(framerate));
+                    if (framerate < 30)
+                        ImGui::TextColored(ImVec4(0.85f, 0.25f, 0.25f, 1.0f), str.c_str());
+                    else if (framerate < 55 && framerate > 30)
+                        ImGui::TextColored(ImVec4(1.0f, 0.56f, 0.0f, 1.0f), str.c_str());
+                    else
+                        ImGui::TextColored(ImVec4(0.07f, 0.55f, 0.0f, 1.0f), str.c_str());
+                }
 
-                str = std::string("Update Time: " + String(world->stats_updatetime));
-                ImGui::Text(str.c_str());
+                std::string str = "";
+                if (mode > 1)
+                {
+                    str = std::string("Poly Count: " + String(world->stats_polysdrawn));
+                    ImGui::Text(str.c_str());
 
-                str = std::string("Render Time: " + String(world->stats_rendertime));
-                ImGui::Text(str.c_str());
+                    str = std::string("Shadow Polygons: " + String(world->stats_shadowpolysdrawn));
+                    ImGui::Text(str.c_str());
 
-                str = std::string("Poly Count: " + String(world->stats_polysdrawn));
-                ImGui::Text(str.c_str());
+                    str = std::string("Lights Drawn: " + String(world->stats_lightsdrawn));
+                    ImGui::Text(str.c_str());
 
-                str = std::string("Batches Drawn: " + String(world->stats_batchesdrawn));
-                ImGui::Text(str.c_str());
+                    str = std::string("Shadows Drawn: " + String(world->stats_shadowsdrawn));
+                    ImGui::Text(str.c_str());
+                }
 
-                str = std::string("Draw Calls: " + String(world->stats_drawcalls));
-                ImGui::Text(str.c_str());
+                if (mode > 2)
+                {
+                    str = std::string("Update Time: " + String(world->stats_updatetime));
+                    ImGui::Text(str.c_str());
 
-                str = std::string("Shadow Polygons: " + String(world->stats_shadowpolysdrawn));
-                ImGui::Text(str.c_str());
+                    str = std::string("Render Time: " + String(world->stats_rendertime));
+                    ImGui::Text(str.c_str());
 
-                str = std::string("Lights Drawn: " + String(world->stats_lightsdrawn));
-                ImGui::Text(str.c_str());
+                    str = std::string("Batches Drawn: " + String(world->stats_batchesdrawn));
+                    ImGui::Text(str.c_str());
 
-                // Add more later....
+                    str = std::string("Draw Calls: " + String(world->stats_drawcalls));
+                    ImGui::Text(str.c_str());
+                }
+
+                if (mode > 3)
+                {
+                    str = std::string("BSP Nodes Drawn: " + String(world->stats_bspnodesdrawn));
+                    ImGui::Text(str.c_str());
+
+                    str = std::string("Brushes Drawn: " + String(world->stats_brushesdrawn));
+                    ImGui::Text(str.c_str());
+
+                    str = std::string("Vegetation Culling: " + String(world->stats_vegetationculling));
+                    ImGui::Text(str.c_str());
+                }
             }
 
             // Allow the end user to put this whereever they want.

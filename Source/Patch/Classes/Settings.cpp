@@ -4,7 +4,7 @@
 namespace Leadwerks
 {
     // TODO: Do proper Get() functions.
-    Setting msaa = SETTING_DISABLED;
+    Setting msaa = SETTING_LOW;
     Setting light = SETTING_MEDIUM;
     Setting shadow = SETTING_MEDIUM;
     Setting tessellation = SETTING_MEDIUM;
@@ -14,42 +14,42 @@ namespace Leadwerks
     float fov = 70.0f;
     Camera* MainCamera;
 
-    static Setting GetMSAA()
+    Setting Settings::GetMSAA()
     {
         return msaa;
     }
 
-    static Setting GetLightQuality()
+    Setting Settings::GetLightQuality()
     {
         return light;
     }
 
-    static Setting GetShadowQuality()
+    Setting Settings::GetShadowQuality()
     {
         return shadow;
     }
 
-    static Setting GetTessellationQuality()
+    Setting Settings::GetTessellationQuality()
     {
         return tessellation;
     }
 
-    static Setting GetTerrainQuality()
+    Setting Settings::GetTerrainQuality()
     {
         return terrain;
     }
 
-    static Setting GetWaterQuality()
+    Setting Settings::GetWaterQuality()
     {
         return water;
     }
 
-    static bool GetHDR()
+    bool Settings::GetHDR()
     {
         return hdr;
     }
 
-    static float GetFov()
+    float Settings::GetFov()
     {
         return fov;
     }
@@ -61,24 +61,24 @@ namespace Leadwerks
 		{
             switch (setting)
             {
-            case SETTING_ULTRA:
-                MainCamera->SetMultisampleMode(16);
+            //case SETTING_ULTRA:
+                //MainCamera->SetMultisampleMode(16);
                 break;
 
             case SETTING_HIGH:
-                MainCamera->SetMultisampleMode(8);
-                break;
-
-            case SETTING_MEDIUM:
                 MainCamera->SetMultisampleMode(4);
                 break;
 
-            case SETTING_LOW:
+            case SETTING_MEDIUM:
                 MainCamera->SetMultisampleMode(2);
                 break;
 
-            case SETTING_DISABLED:
+            case SETTING_LOW:
                 MainCamera->SetMultisampleMode(1);
+                break;
+
+            //case SETTING_DISABLED:
+                //MainCamera->SetMultisampleMode(1);
                 break;
 
             default:
@@ -94,17 +94,17 @@ namespace Leadwerks
         {
             switch (setting)
             {
-            case SETTING_ULTRA:
+            //case SETTING_ULTRA:
             case SETTING_HIGH:
                 MainCamera->GetWorld()->SetLightQuality(2);
                 break;
 
-            case SETTING_MEDIUM:
+            case SETTING_MEDIUM: 
                 MainCamera->GetWorld()->SetLightQuality(1);
                 break;
 
             case SETTING_LOW:
-            case SETTING_DISABLED:
+            //case SETTING_DISABLED:
                 MainCamera->GetWorld()->SetLightQuality(0);
                 break;
 
@@ -123,7 +123,24 @@ namespace Leadwerks
                 if (p->GetClass() == Object::PointLightClass || p->GetClass() == Object::SpotLightClass)
                 {
                     Light* light = CastObject<Light>(p);
-                    light->SetShadowMapSize(size);
+
+                    if (light)
+                    {
+                        // Ensure the static lights remain static...
+                        if (light->GetShadowMode() == Light::Static)
+                        {
+                            light->FreezeChanges = true;
+                            light->InvalidateShadowMap(Light::Static);
+                        }
+
+                        auto lq = MainCamera->GetWorld()->GetLightQuality();
+                        if (lq > 0)
+                        {
+                            MainCamera->GetWorld()->SetLightQuality(0);
+                            light->SetShadowMapSize(size);
+                            MainCamera->GetWorld()->SetLightQuality(lq);
+                        }
+                    }                    
                 }
             }
         }
@@ -137,7 +154,6 @@ namespace Leadwerks
         {
             switch (setting)
             {
-            case SETTING_ULTRA:
             case SETTING_HIGH:
                 SetShadowScale(1024);
                 break;
@@ -147,7 +163,6 @@ namespace Leadwerks
                 break;
 
             case SETTING_LOW:
-            case SETTING_DISABLED:
                 SetShadowScale(256);
                 break;
 
@@ -164,7 +179,6 @@ namespace Leadwerks
         {
             switch (setting)
             {
-            case SETTING_ULTRA:
             case SETTING_HIGH:
                 MainCamera->GetWorld()->SetTessellationQuality(2);
                 break;
@@ -174,7 +188,6 @@ namespace Leadwerks
                 break;
 
             case SETTING_LOW:
-            case SETTING_DISABLED:
                 MainCamera->GetWorld()->SetTessellationQuality(0);
                 break;
 
@@ -191,7 +204,6 @@ namespace Leadwerks
         {
             switch (setting)
             {
-            case SETTING_ULTRA:
             case SETTING_HIGH:
                 MainCamera->GetWorld()->SetTerrainQuality(2);
                 break;
@@ -201,7 +213,6 @@ namespace Leadwerks
                 break;
 
             case SETTING_LOW:
-            case SETTING_DISABLED:
                 MainCamera->GetWorld()->SetTerrainQuality(0);
                 break;
 
@@ -218,7 +229,6 @@ namespace Leadwerks
         {
             switch (setting)
             {
-            case SETTING_ULTRA:
             case SETTING_HIGH:
                 MainCamera->GetWorld()->SetWaterQuality(2);
                 break;
@@ -228,7 +238,6 @@ namespace Leadwerks
                 break;
 
             case SETTING_LOW:
-            case SETTING_DISABLED:
                 MainCamera->GetWorld()->SetWaterQuality(0);
                 break;
 
@@ -258,7 +267,32 @@ namespace Leadwerks
         SetShadowQuality(shadow);
         SetTessellationQuality(tessellation);
         SetTerrainQuality(terrain);
+        SetWaterQuality(water);
         SetHDR(hdr);
         SetFov(fov);
+    }
+
+    std::string Settings::GetSettingString(Setting setting)
+    {
+        std::string s = "";
+        switch (setting)
+        {
+        case SETTING_HIGH:
+            s = "High";
+            break;
+
+        case SETTING_MEDIUM:
+            s = "Medium";
+            break;
+
+        case SETTING_LOW:
+            s = "Low";
+            break;
+
+        default:
+            break;
+        }
+
+        return s;
     }
 }

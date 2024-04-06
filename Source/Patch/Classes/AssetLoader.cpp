@@ -105,7 +105,7 @@ namespace Leadwerks
     {
         auto fontpath = FileSystem::StripDir(path);
         fontpath = GetSystemFontDir() + "/" + fontpath;
-        auto font = Font::Load(path, size, style, Font::English, flags);
+        auto font = Font::Load(fontpath, size, style, Font::English, flags);
         return font;
     }
 

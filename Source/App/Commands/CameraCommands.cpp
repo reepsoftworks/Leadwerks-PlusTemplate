@@ -79,7 +79,7 @@ void CC_HDRMode(std::string pArgV)
 	if (pArgV.empty())
 		return;
 
-	DPrint("Setting water quality to " + pArgV);
+	DPrint("Setting HDR mode to " + pArgV);
 
 	auto setting = (bool)String::Int(pArgV);
 	Settings::SetHDR(setting);

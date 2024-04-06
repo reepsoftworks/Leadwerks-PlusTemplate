@@ -4,6 +4,9 @@
 using namespace Leadwerks;
 using namespace App;
 
+//#define TEST
+
+#ifndef TEST
 int main(int argc, const char* argv[])
 {
     // Parse Arguments
@@ -22,23 +25,80 @@ int main(int argc, const char* argv[])
 
     return 0;
 }
-
-#if 0
+#else
 #include "App/App.h"
-#include "ActorSystem.h"
-bool EventCallback(const Event& e, Object* extra)
+
+int main(int argc, const char* argv[])
 {
-    if (e.id == Event::WindowMove)
+    Leadwerks::Window* window = Leadwerks::Window::Create("Leadwerks", 0, 0, 1280, 720, Window::Titlebar | Window::Center);
+    Leadwerks::Context* context = Leadwerks::Context::Create(window);
+
+    auto world = World::Create();
+    auto camera = Camera::Create();
+    camera->SetClearColor(0.125f);
+    camera->SetPosition(0, 0, -3);
+    Settings::Apply(camera);
+
+    auto light = DirectionalLight::Create();
+    light->Turn(45, 35, 0);
+
+    auto model = Model::Box();
+
+    Material* material = AssetLoader::LoadMaterial("Materials/Developer/grid02.mat");
+    model->SetMaterial(material);
+
+    // Test Material values....
+    MaterialValue myvalue;
+    myvalue.name = "surfprop";
+    myvalue.size = 4;
+    material->values["surfprop"] = myvalue;
+    for (auto& p : material->values)
     {
-        Print("Event::WindowMove");
+        auto key = p.first;
+        auto value = p.second;
+
+        Print(key + " = " + value.name);
     }
-    else if (e.id == Event::TimerTick)
+    material->Release();
+
+    // Test getting the ambient shader.
+    auto shader = Shader::Load("Shaders/Lighting/ambientlight.shader");
+    if (shader)
     {
-        Print("Tick");
+        shader->SetInt("simpleshading", 1);
     }
+
+    bool running = true;
+    while (running)
+    {
+        while (PeekEvent())
+        {
+            const auto e = WaitEvent();
+            if (e.id == Event::WindowClose)
+            {
+                Print("Window Close");
+                running = false;
+                break;
+            }
+            else if (e.id == EVENT_STARTRENDERER)
+            {
+                Print("EVENT_STARTRENDERER");
+            }
+        }
+
+        model->Turn(0, 1.0f * Time::GetSpeed(), 0);
+        UpdateTime();
+        world->Update();
+        world->Render();
+        UpdateRender(context);
+    }
+
     return true;
 }
 
+#endif
+
+#if 0
 int main(int argc, const char* argv[])
 {
     Program::ParseArguments(argc, argv);

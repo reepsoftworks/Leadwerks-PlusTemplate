@@ -9,6 +9,7 @@
 
 namespace Leadwerks
 {
+	// Message IDs
 	const int OS::MessageOK = 1;
 	const int OS::MessageCancel = 2;
 	const int OS::MessageAbort = 3;
@@ -16,6 +17,8 @@ namespace Leadwerks
 	const int OS::MessageIgnore = 5;
 	const int OS::MessageYes = 6;
 	const int OS::MessageNo = 7;
+
+	// Themes
 	const int OS::ThemeSystem = 8;
 	const int OS::ThemeLight = 9;
 	const int OS::ThemeDark = 10;
@@ -416,6 +419,44 @@ namespace Leadwerks
 	{
 		System::CountGraphicsModes();
 		return System::graphicsmodes;
+	}
+
+	static std::vector<std::string> resolution_strings;
+	std::vector<std::string> OS::GetDisplayOptions()
+	{
+		auto gfx = OS::GetDisplayModes();
+		for (const auto& p : gfx)
+		{
+			std::string n = String(p.x) + "x" + String(p.y);
+			resolution_strings.push_back(n);
+		}
+
+		return resolution_strings;
+	}
+
+	int OS::FindDisplayOption(const std::string& SizeXxSizeY)
+	{
+		int ret = 0;
+		if (resolution_strings.empty()) resolution_strings = OS::GetDisplayOptions();
+		for (std::size_t i = 0; i < resolution_strings.size(); i ++)
+		{
+			auto t = resolution_strings[i];
+			auto test_vec2 = String::Split(SizeXxSizeY, "x");
+			auto vec2 = String::Split(t, "x");
+			if (vec2[0] == test_vec2[0] && vec2[1] == test_vec2[1])
+			{
+				ret = (int)i;
+				break;
+			}
+		}
+
+		return ret;
+	}
+
+	std::string OS::GetDisplayString(const int i)
+	{
+		if (resolution_strings.empty()) resolution_strings = OS::GetDisplayOptions();
+		return resolution_strings[i];
 	}
 
 	bool OS::SetWindowTitlebarTheme(Leadwerks::Window* source, const int theme)

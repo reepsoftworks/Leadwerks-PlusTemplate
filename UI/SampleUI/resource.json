@@ -1,0 +1,49 @@
+{
+    "resources":
+    {
+        "fonts":
+        {
+            "title":
+            {
+                "file": "UI/Fonts/FreeSans.ttf",
+                "size": 36
+            },
+            "menu":
+            {
+                "file": "UI/Fonts/FreeSans.ttf",
+                "size": 18
+            }
+        },
+
+        "loadingicon": "UI/SampleUI/loadingicon.tex",
+        "loadingscreen": "UI/SampleUI/Backgrounds/loadingscreen.tex",
+        "loadingspinner": "UI/SampleUI/Spinner/loadingspinner.tex"
+    },
+
+    "menu":
+    {
+        "margin": 96,
+        "menuposY": 36,
+        "titleoffset": 48,
+        "items":
+        {
+            "0":
+            {
+                "label" : "#GameUI_GameMenu_NewGame",
+                "command": "map test",
+                "label_ingame" : "#GameUI_GameMenu_ResumeGame",
+                "command_ingame" : "resume"
+            },
+            "1":
+            {
+                "label" : "#GameUI_GameMenu_Options",
+                "command": "settingsdialog"
+            },
+            "2":
+            {
+                "label" : "#GameUI_GameMenu_Quit",
+                "command": "quit"
+            }
+        }
+    }
+}

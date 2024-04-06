@@ -12,6 +12,8 @@ namespace App
         historypos = -1;
         scrolltobottom = true;
         autoscroll = true;
+
+        window_opened = false;
     }
 
     ConsoleGadget::~ConsoleGadget()
@@ -157,6 +159,13 @@ namespace App
         items.push_back(Strdup(buf));
     }
 
+    void ConsoleGadget::Hide()
+    {
+        shown = false;
+        if (window_opened) EmitEvent(Event::WidgetClose, this);
+        window_opened = false;
+    }
+
     void ConsoleGadget::ExecCommand(const char* command_line)
     {
         AddLog("] %s\n", command_line);
@@ -214,7 +223,7 @@ namespace App
             ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
         }
 
-        if (ImGui::Begin("InfoPanel", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize
+        if (ImGui::Begin("InfoGadget", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize
             | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBackground))
         {
             string build = " (Build " + String(VERSION_BUILD) + ")";
@@ -239,11 +248,18 @@ namespace App
             ImGui::SetNextWindowSize(ImVec2(work_size.x / 2 , work_size.y / 1.25f), ImGuiCond_Appearing);
         }
 
-        //static bool consolewindow_opened = shown;
         if (!ImGui::Begin("Console", &shown, ImGuiWindowFlags_NoCollapse))
         {
             ImGui::End();
             return;
+        }
+        else
+        {
+            if (window_opened == false && shown)
+            {
+                EmitEvent(Event::WidgetOpen, this);
+                window_opened = true;
+            }
         }
 
         // Handle closing
@@ -253,6 +269,7 @@ namespace App
             ImGui::End();
             return;
         }
+
 
         // Reserve enough left-over height for 1 separator + 1 input text
         const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
@@ -281,11 +298,18 @@ namespace App
         ImGui::EndChild();
 
         // Textfield
-        bool send = ImGui::Button("Send", ImVec2(80, 0));
+        float currposx = ImGui::GetCursorPosX();
+        ImVec2 buttonSize(80, 0);
+        float widthNeeded = buttonSize.x + ImGui::GetStyle().ItemSpacing.x;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - widthNeeded);
+        bool send = ImGui::Button("Send", buttonSize);
         ImGui::SameLine();
+        ImGui::SetCursorPosX(currposx);
         bool reclaim_focus = false;
         ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory;
-        if (ImGui::InputText("Command", InputBuf, IM_ARRAYSIZE(InputBuf), input_text_flags, &TextEditCallbackStub, (void*)this) || send)
+
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x - widthNeeded);
+        if (ImGui::InputText(" ", InputBuf, IM_ARRAYSIZE(InputBuf), input_text_flags, &TextEditCallbackStub, (void*)this) || send)
         {
             char* s = InputBuf;
             Strtrim(s);
@@ -293,9 +317,8 @@ namespace App
                 ExecCommand(s);
             strcpy(s, "");
             reclaim_focus = true;
-
-            reclaim_focus = true;
         }
+        ImGui::PopItemWidth();
 
         // Auto-focus on window apparition
         ImGui::SetItemDefaultFocus();

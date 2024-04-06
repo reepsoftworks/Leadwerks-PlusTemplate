@@ -33,11 +33,11 @@ namespace Leadwerks
 
 	enum Setting
 	{
-		SETTING_DISABLED = 0,
+		//SETTING_DISABLED = 0,
 		SETTING_LOW,
 		SETTING_MEDIUM,
 		SETTING_HIGH,
-		SETTING_ULTRA
+		//SETTING_ULTRA
 	};
 
 	// LeadwerksPlus Callback

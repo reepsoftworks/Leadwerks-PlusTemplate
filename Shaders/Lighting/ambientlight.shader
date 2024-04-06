@@ -59,7 +59,7 @@ void main(void)
 	uniform sampler2DMS texture4;
 #endif
 
-//#define SIMPLE_SHADING
+#define SIMPLE_SHADING
 
 //Fog parameters
 uniform bool fogmode = true;
@@ -133,7 +133,8 @@ void main(void)
 #ifdef SIMPLE_SHADING
 		//Simple shading
 		if ((1 & materialflags)!=0) {
-			vec4 lightdir = vec4(-0.4,-0.45,0.5,1.0);
+			//vec4 lightdir = vec4(-0.4,-0.45,0.5,1.0);
+			vec4 lightdir = vec4(0.0,-0.90,0.0,1.0);
 			float intensity = abs(dot(normalize(samplenormal.xyz),lightdir.xyz))*0.5+0.75;
 			samplediffuse *= intensity;
 		}

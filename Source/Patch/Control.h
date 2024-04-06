@@ -15,5 +15,4 @@ namespace Leadwerks
 
 	// Framebuffer
 	extern void UpdateRender(Framebuffer* framebuffer, const bool sync = false, const float framerate = 0.0f);
-
 }

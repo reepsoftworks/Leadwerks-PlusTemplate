@@ -59,6 +59,7 @@ namespace App
 		static GraphicsWindow* GetCurrent();
 		Leadwerks::Framebuffer* GetFramebuffer();
 		Leadwerks::Interface* GetInterface();
+		Leadwerks::ImGuiLayer* GetImGUI();
 		GraphicWindowSettings CurrentSettings() { return currentsettings; };
 	};
 
