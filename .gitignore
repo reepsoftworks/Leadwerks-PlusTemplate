@@ -51,7 +51,7 @@ backup/**
 imgui.ini
 
 # Exclude tools
-!Tools/
+!Tools/**
 
 # Exclude untested things!
 Source/Patch/Classes/GamePad.cpp
