@@ -36,7 +36,7 @@ namespace Leadwerks
 
 					// Check to see is the value isn't a list of somesorts.
 					auto list = String::Split(value, ",");
-					if (list.empty())
+					if (list.size() > 1)
 					{
 						data[key] = {};
 						for (const auto& p : list)
@@ -46,7 +46,8 @@ namespace Leadwerks
 					}
 					else
 					{
-						data[key] = value;
+						auto txt = UnQuoteString(value);
+						data[key] = txt;
 					}
 				}
 			}
@@ -75,7 +76,7 @@ namespace Leadwerks
 
 					// Check to see is the value isn't a list of somesorts.
 					auto list = String::Split(value, ",");
-					if (list.empty())
+					if (list.size() > 1)
 					{
 						data[key] = {};
 						for (const auto& p : list)
@@ -85,7 +86,8 @@ namespace Leadwerks
 					}
 					else
 					{
-						data[key] = value;
+						auto txt = UnQuoteString(value);
+						data[key] = txt;
 					}
 				}
 			}

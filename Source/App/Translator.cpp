@@ -11,6 +11,7 @@ namespace App
 	void Translator::SetLanguage(const std::string& language)
 	{
 		currentlanguage = String::Lower(language);
+		EmitEvent(EVENT_LANGUAGE, NULL);
 	}
 
 	void Translator::LoadTokenList(const std::string& path)
@@ -19,8 +20,10 @@ namespace App
 		if (j3.is_object())
 		{
 			auto lang = currentlanguage;
-			if (j3["language"].is_string()) lang = j3["language"];
+			if (!j3["language"].is_string())
+				return;
 
+			lang = j3["language"];
 			std::map<string, string> list;
 
 			if (j3["tokens"].is_object())
@@ -34,7 +37,6 @@ namespace App
 			}
 
 			tokenlists.insert(pair<std::string, std::map<string, string>>(String::Lower(lang), list));
-	
 		}
 	}
 

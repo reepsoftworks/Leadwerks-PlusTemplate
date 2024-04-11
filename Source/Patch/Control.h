@@ -5,6 +5,7 @@ namespace Leadwerks
 {
 	// Time
 	extern bool PauseState();
+	extern float GetAppSpeed();
 	extern void UpdateTime(const int framePerSecond = 60);
 
 	// Events

@@ -3,6 +3,8 @@
 #include "SceneActor.h"
 #include "../ActorSystem.h"
 
+extern ConVar phys_steps;
+
 namespace App
 {
 	using namespace Leadwerks;
@@ -125,7 +127,7 @@ namespace App
 			if (LoadMapFile(Scene::nextmaptoload))
 			{
 				// Assign the camera 
-				if (MainCamera == NULL)
+				//if (MainCamera == NULL)
 				{
 					int cameracount = 0;
 					for (const auto& camera : world->cameras)
@@ -161,7 +163,9 @@ namespace App
 		}
 
 		UpdateTime();
-		if (!PauseState()) world->Update();		
+		auto steps = phys_steps.GetInt();
+		if (steps <= 0) steps = 1;
+		if (!PauseState()) world->Update(steps);
 		world->Render();
 
 		// If there's no map loaded, draw a black rect over the screen.
@@ -220,6 +224,7 @@ namespace App
 
 			world->Clear(true);
 			mapdata.clear();
+			if (MainCamera) MainCamera = NULL;
 
 			FireCallback(CALLBACK_SCENECLEAR, this, NULL);
 		}

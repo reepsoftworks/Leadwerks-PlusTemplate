@@ -56,3 +56,5 @@ imgui.ini
 # Exclude untested things!
 Source/Patch/Classes/GamePad.cpp
 Source/Patch/Classes/GamePad.h
+Source/App/Input/**
+Source/App/Input.**

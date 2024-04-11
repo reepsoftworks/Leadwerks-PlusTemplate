@@ -4,23 +4,9 @@
 using namespace Leadwerks;
 using namespace App;
 
-void CC_WindowMode(std::string pArgV)
-{
-	if (pArgV.empty())
-		return;
-
-	auto window = GraphicsWindow::GetCurrent();
-	if (window)
-	{
-		auto settings = window->CurrentSettings();
-		auto value = (GraphicWindowStyles)String::Int(pArgV);
-		settings.style = value;
-		window->Resize(settings);
-	}
-}
-static ConVar windowmode("windowmode", "0", CVAR_SAVE, "Usage: fullscreen <int (0 = Normal, 1 = Borderless, 2 = Fullscreen, 3 = Native Fullscreen, 4 = Fullscreen Boarderless)>", CC_WindowMode);
-static ConVar screenwidth("screenwidth", "1280", CVAR_SAVE, "Usage: screenwidth <int>");
-static ConVar screenheight("screenheight", "720", CVAR_SAVE, "Usage: screenheight <int>");
+extern ConVar windowmode;
+extern ConVar screenwidth;
+extern ConVar screenheight;
 
 // TODO: move to user app directory...
 #define USER_CONFIG "config.cfg"
@@ -68,7 +54,7 @@ bool SampleApp::Start()
 	Program::LoadConVars(USER_CONFIG);
 	Program::ExecuteMap(Program::Arguments);
 
-	// Create the graphics window
+	// Gather the launching window settings.
 	GraphicWindowSettings windowsettings = GraphicWindowSettings();
 	const bool editormode = (bool)(Program::GetAppMode() == Program::EditorMode);
 	if (!editormode)
@@ -91,6 +77,7 @@ bool SampleApp::Start()
 		}
 	}
 
+	// Create the window.
 	window = GraphicsWindow::Create(Program::GetTitle(), windowsettings, splashwindow);
 	if (!window)
 	{
@@ -115,6 +102,8 @@ bool SampleApp::Start()
 bool SampleApp::Update()
 {
 	bool running = true;
+
+	// Process events.
 	while (PeekEvent())
 	{
 		const auto e = WaitEvent();
@@ -130,13 +119,15 @@ bool SampleApp::Update()
 	auto appmode = Program::GetAppMode();
 	if (appmode > Program::NormalMode)
 	{
-		if (window->KeyHit(Key::F1)) // TODO: Replace me with the input system.
+		if (window->ButtonHit(Key::F1)) // TODO: Replace me with the input system.
+		//if (Input::ActionHit("Console"))
 		{
 			ui->ToggleConsole();
 		}
 	
 		// Fullscreen toggle.
-		if (window->KeyHit(Key::F11)) // TODO: Replace me with the input system.
+		if (window->ButtonHit(Key::F11)) // TODO: Replace me with the input system.
+		//if (Input::ActionHit("Fullscreen"))
 		{
 			bool fullscreen = false;
 			GraphicWindowSettings windowsettings = window->CurrentSettings();
@@ -155,12 +146,14 @@ bool SampleApp::Update()
 		}
 
 		// Terminate
-		if (window->KeyHit(Key::End)) // TODO: Replace me with the input system.
+		if (window->ButtonHit(Key::End)) // TODO: Replace me with the input system.
+		//if (Input::ActionHit("Terminate"))
 		{
 			EmitEvent(Event::Quit);
 		}
 	}
 
+	// Update + sync!
 	scene->Update();
 	window->Sync();
 	return running;

@@ -11,11 +11,12 @@ namespace App
 		size = iVec2(80, 20);
 		//color = Vec4(1.0f);
 
-		color[UIGADGET_COLOR_BASE] = Vec4(1.0f);
+		color[UIGADGET_COLOR_BASE] = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		color[UIGADGET_COLOR_BORDER] = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
-		color[UIGADGET_COLOR_HIGHLIGHT] = Vec4(0.75f, 0.75f, 0.75f, 1.0f);
-		color[UIGADGET_COLOR_SUNKEN] = Vec4(0.25f, 0.25f, 0.25f, 1.0f);
+		color[UIGADGET_COLOR_HIGHLIGHT] = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+		color[UIGADGET_COLOR_SUNKEN] = Vec4(0.35f, 0.35f, 0.35f, 1.0f);
 		activecolor = color[UIGADGET_COLOR_BASE];
+		alpha = 1.0f;
 		texture = NULL;
 		font = NULL;
 		parent = NULL;
@@ -123,6 +124,11 @@ namespace App
 			}
 		}
 
+		if (e.id == EVENT_LANGUAGE)
+		{
+			text = Translator::TranslateToken(text);
+		}
+
 		return true;
 	}
 
@@ -131,6 +137,7 @@ namespace App
 		Listen(Event::MouseMove, NULL);
 		Listen(Event::MouseDown, NULL);
 		Listen(Event::MouseUp, NULL);
+		Listen(EVENT_LANGUAGE, NULL);
 		enabled = true;
 	}
 
@@ -172,9 +179,9 @@ namespace App
 		position.x = parent_pos.x + pos.x;
 		position.y = parent_pos.x + pos.y;
 
-		auto scale = static_cast<int>(OS::GetDisplayScale());
-		this->position.x *= scale;
-		this->position.y *= scale;
+		//auto scale = static_cast<int>(OS::GetDisplayScale());
+		this->position.x; //*= scale;
+		this->position.y; //*= scale;
 
 		for (const auto& child : children)
 		{
@@ -212,9 +219,9 @@ namespace App
 	{
 		this->size = size;
 
-		auto scale = static_cast<int>(OS::GetDisplayScale());
-		this->size.x *= scale;
-		this->size.y *= scale;
+		//auto scale = static_cast<int>(OS::GetDisplayScale());
+		//this->size.x *= scale;
+		//this->size.y *= scale;
 	}
 
 	iVec2 UIGadget::GetSize()
@@ -323,26 +330,29 @@ namespace App
 		dropshadow = mode;
 	}
 
-	void UIGadget::SetColor(const float r, const float b, const float g, const float a)
+	void UIGadget::SetColor(const float r, const float b, const float g, const float a, const int index)
 	{
-		color[UIGADGET_COLOR_BASE] = Vec4(r, g, b, a);
-		activecolor = color[UIGADGET_COLOR_BASE];
+		color[index] = Vec4(r, g, b, a);
+		activecolor.r = color[index].r;
+		activecolor.g = color[index].g;
+		activecolor.b = color[index].b;
+		activecolor.a = color[index].a;
+		if (index == 0) alpha = activecolor.a;
 	}
 
 	void UIGadget::FadeIn(const float target, const float speed)
 	{
 		if (GetHidden())
 		{
-			activecolor.a = 0.0f;
+			alpha = 0.0f;
 			Show();
 		}
 
 		if (fadeout)
 		{
-			//activecolor.a = 1.0f;
 		}
 
-		fademax = target;
+		fademax = target; //Math::Clamp(target, 0.0, activecolor.a);
 		fadetime = speed;
 		fadeout = false;
 
@@ -366,24 +376,34 @@ namespace App
 
 	void UIGadget::HandleFading()
 	{
-		float speed = Time::GetSpeed();
-		if (PauseState()) speed = 0.125f;
+		float speed = GetAppSpeed();
+		//float minalpha = Math::Clamp(alpha, fademin, activecolor.a);
+		float maxalpha = Math::Clamp(alpha, fademax, activecolor.a);
 
-		if (fadeout && activecolor.a != fademin)
+		if (fadeout && alpha != fademin)
 		{
-			activecolor.a = Math::Inc(fademin, activecolor.a, speed * fadetime);
-			if (activecolor.a == 0.0f) Hide();
+			alpha = Math::Inc(fademin, alpha, speed * fadetime);
+			if (alpha == 0.0f) Hide();
+
+			for (const auto& child : children)
+			{
+				child->alpha = alpha;
+			}
 		}
-		else if (!fadeout && activecolor.a < fademax)
+		else if (!fadeout && alpha < maxalpha)
 		{
-			activecolor.a = Math::Inc(fademax, activecolor.a, speed * fadetime);
-		}	
+			alpha = Math::Inc(maxalpha, alpha, speed * fadetime);
+			for (const auto& child : children)
+			{
+				child->alpha = alpha;
+			}
+		}
 	}
 
 	void UIGadget::DrawUI(Leadwerks::Framebuffer* context)
 	{
 		// Default drawing code.
-		if (activecolor.a != 0.0f)
+		if (alpha != 0.0f || activecolor.a <= 0.0f)
 		{
 			iVec2 parent_pos = iVec2(0, 0);
 			if (parent)
@@ -392,7 +412,6 @@ namespace App
 			}
 
 			context->SetBlendMode(Blend::Alpha);
-			context->SetColor(activecolor);
 
 			// nodraw breaks fading on children.
 			if (nodraw == false)
@@ -416,28 +435,30 @@ namespace App
 
 					if (dropshadow)
 					{
-						context->SetColor(0.0f, 0.0f, 0.0f, activecolor.a);
+						context->SetColor(0.0f, 0.0f, 0.0f, alpha);
 						context->DrawText(text, position.x + 2, position.y + 2, size.x, size.y);
-						context->SetColor(activecolor);
 					}
 
+					context->SetColor(activecolor.r, activecolor.g, activecolor.b, alpha);
 					context->DrawText(text, position.x, position.y, size.x, size.y);
 				}
 				else
 				{
 					if (dropshadow)
 					{
-						context->SetColor(0.0f, 0.0f, 0.0f, activecolor.a);
+						context->SetColor(0.0f, 0.0f, 0.0f, alpha);
 						context->DrawRect(position.x + 2, position.y + 2, size.x, size.y);
-						context->SetColor(activecolor);
+						
 					}
 
 					if (!texture)
 					{
+						context->SetColor(activecolor.r, activecolor.g, activecolor.b, alpha);
 						context->DrawRect(position.x, position.y, size.x, size.y);
 					}
 					else
 					{
+						context->SetColor(activecolor.r, activecolor.g, activecolor.b, alpha);
 						context->DrawImage(texture, position.x, position.y, size.x, size.y);
 					}
 				}
@@ -447,7 +468,7 @@ namespace App
 			{
 				for (int i = 0; i < borderthickness; i++)
 				{
-					context->SetColor(color[UIGADGET_COLOR_BORDER].r, color[UIGADGET_COLOR_BORDER].g, color[UIGADGET_COLOR_BORDER].b, activecolor.a);
+					context->SetColor(color[UIGADGET_COLOR_BORDER].r, color[UIGADGET_COLOR_BORDER].g, color[UIGADGET_COLOR_BORDER].b, alpha);
 					context->DrawRect(position.x + i, position.y + i, size.x, size.y, 1);
 				}
 			}

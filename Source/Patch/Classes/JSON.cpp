@@ -217,7 +217,7 @@ namespace Leadwerks
         return t;
     }
 
-    bool Table::Save(table& t, std::string& path)
+    bool Table::Save(table& t, const std::string& path)
     {
         nlohmann::json j3 = t.to_json();
         return JSON::Save(j3, path);
@@ -237,7 +237,7 @@ namespace Leadwerks
         return t;
     }
 
-    bool Table::Save(table& t, std::wstring& path)
+    bool Table::Save(table& t, const std::wstring& path)
     {
         nlohmann::json j3 = t.to_json();
         return JSON::Save(j3, path);

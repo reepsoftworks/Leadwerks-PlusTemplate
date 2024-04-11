@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "../../App/App.h"
 
-class Spinner : public App::SceneActor
+class_actor Spinner : public App::SceneActor
 {
 public:
 	// Start Enabled

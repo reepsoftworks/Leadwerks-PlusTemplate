@@ -11,13 +11,6 @@ namespace App
 	const int Program::EditorMode = 1;
 	const int Program::DebugMode = 2;
 
-	std::string Program::GetTitle()
-	{
-		std::string title = Leadwerks::System::AppName;
-		if (title.empty()) title = "Leadwerks";
-		return title;
-	}
-
 	void Program::ParseArguments(int argc, const char* argv[])
 	{
 		//AttachDebugHook();
@@ -92,10 +85,20 @@ namespace App
 		return true;
 	}
 
+	std::string Title = "";
 	uint64_t Program::AppID = 0;
 	std::string Program::Author = "";
 	std::string Program:: Copyright = "";
 
+	std::string Program::GetTitle()
+	{
+		if (!Title.empty())
+			return Title;
+
+		if (Title.empty()) Title = Leadwerks::System::AppName;
+		if (Title.empty()) Title = "Leadwerks";
+		return Title;
+	}
 	bool Program::LoadWerkFile()
 	{
 		if (Leadwerks::System::AppName.empty()) return false;
@@ -104,8 +107,9 @@ namespace App
 		auto werkfile = Config::Load(file);
 		if (!werkfile) return false;
 
-		string id = werkfile->GetValue("AppID");
-		AppID = String::UInt64(id);
+		// Replace the name with the one in the file.
+		Title = werkfile->GetValue("Title");
+		AppID = String::UInt64(werkfile->GetValue("AppID"));
 		Author = werkfile->GetValue("Author");
 		Copyright = werkfile->GetValue("Copyright");
 

@@ -21,6 +21,18 @@ namespace App
 	class GraphicsWindow : public Leadwerks::Object
 	{
 		static GraphicsWindow* current;
+
+		bool anybuttonhit;
+		int lastbutton;
+		std::map<int, bool> buttondownstate;
+		std::map<int, bool> buttonhitstate;
+		std::map<int, bool> buttonreleasedstate;
+		Leadwerks::Vec2 rawmouseaxis;
+
+		void PumpButtonCodeDown(const int code);
+		void PumpButtonCodeUp(const int code);
+		void PumpMouseWheelDir(const int dir);
+
 	protected:
 		std::string title;
 		Leadwerks::Window* window_ptr;
@@ -45,12 +57,19 @@ namespace App
 		virtual void Resize(const GraphicWindowSettings& settings);
 		virtual void Close();
 		virtual bool Closed();
+		Leadwerks::iVec2 GetSize();
 
-		bool KeyHit(const int keycode);
-		bool KeyDown(const int keycode);
-		bool MouseHit(const int button);
-		bool MouseDown(const int button);
+		bool ButtonHit(const int code);
+		bool ButtonDown(const int code);
+		bool ButtonReleased(const int code);
+		bool ButtonAnyDown();
+		bool ButtonAnyHit();
+		int LastButtonPressed();
+		void SetMousePosition(const int x, const int y);
+		Leadwerks::Vec2 GetMousePosition();
 		Leadwerks::Vec2 GetMouseAxis(const float dpi = 1000);
+		void SetCursor(bool cursor);
+		void Flush();
 
 		bool StartFrame();
 		void Sync(const bool sync = false, const float framerate = 0.0f);
@@ -61,6 +80,10 @@ namespace App
 		Leadwerks::Interface* GetInterface();
 		Leadwerks::ImGuiLayer* GetImGUI();
 		GraphicWindowSettings CurrentSettings() { return currentsettings; };
+
+#if defined (_WIN32)
+		friend LRESULT CALLBACK GfxWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+#endif
 	};
 
 #if defined (_WIN32)

@@ -261,7 +261,7 @@ namespace Leadwerks
 
     void Settings::Apply(Camera* camera)
     {
-        if (camera != MainCamera) MainCamera = camera;
+        MainCamera = camera;
         SetMSAA(msaa);
         SetLightQuality(light);
         SetShadowQuality(shadow);

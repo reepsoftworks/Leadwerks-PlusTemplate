@@ -20,6 +20,7 @@ namespace App
 		UIGadget* parent;
 		std::vector<UIGadget*> children;
 		Leadwerks::Vec4 activecolor;
+		float alpha;
 		bool fadeout;
 		float fadetime;
 		float fademin;
@@ -36,8 +37,6 @@ namespace App
 		std::string text;
 		int borderthickness;
 		
-
-		virtual void SetDropShadowMode(const bool mode);
 		virtual bool ProcessEvent(const Leadwerks::Event& e);
 		virtual void DrawUI(Leadwerks::Framebuffer* context);
 		const bool Highlighted();
@@ -61,6 +60,7 @@ namespace App
 		virtual void SetFont(const std::string& path, const int size);
 		virtual void SetFont(Leadwerks::Font* font);
 		virtual void SetText(const std::string& text);
+		virtual void SetDropShadowMode(const bool mode);
 
 		virtual Leadwerks::iVec2 GetPosition();
 		virtual Leadwerks::iVec2 GetSize();
@@ -72,7 +72,7 @@ namespace App
 		virtual void OnMouseLeave();
 		virtual void Highlight();
 
-		void SetColor(const float r, const float b, const float g, const float a);
+		void SetColor(const float r, const float b, const float g, const float a = 1.0f, const int index = 0);
 
 		void FadeIn(const float target = 1.0f, const float speed = 0.05f);
 		void FadeOut(const float target = 0.0f, const float speed = 0.05f);

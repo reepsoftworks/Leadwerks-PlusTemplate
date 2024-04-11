@@ -27,6 +27,7 @@ namespace App
 		void Apply();
 		void Reset();
 
+		int item_current_display;
 		bool window_opened;
 	public:
 		SettingsGadget();

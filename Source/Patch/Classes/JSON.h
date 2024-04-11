@@ -23,11 +23,11 @@ namespace Leadwerks
 	public:
 		static table Load(const std::string& path);
 		static table Load(Stream* stream);
-		static bool Save(table& t, std::string& path);
+		static bool Save(table& t, const std::string& path);
 
 		static table Load(const std::wstring& path);
 		static table Load(shared_ptr<FileStream> stream);
-		static bool Save(table& t, std::wstring& path);
+		static bool Save(table& t, const std::wstring& path);
 	};
 #endif
 }

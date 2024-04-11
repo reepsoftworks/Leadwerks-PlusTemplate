@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "App.h"
+#include "Input/ButtonCode.h"
 
 #if defined (_WIN32)
 #ifndef HID_USAGE_PAGE_GENERIC
@@ -87,6 +88,7 @@ namespace App
         imgui = NULL;
         splash = NULL;
         uibasecolor = NULL;
+        rawmouseaxis = Vec2(0);
 	}
 
 	GraphicsWindow::~GraphicsWindow()
@@ -315,33 +317,169 @@ namespace App
         return true;
     }
 
-    bool GraphicsWindow::MouseDown(const int button)
+    Leadwerks::iVec2 GraphicsWindow::GetSize()
     {
-        return window_ptr->MouseDown(button);
+        if (window_ptr) return iVec2(window_ptr->GetWidth(), window_ptr->GetHeight());
+        return currentsettings.size;
     }
 
-    bool GraphicsWindow::MouseHit(const int button)
+    bool GraphicsWindow::ButtonHit(const int code)
     {
-        return window_ptr->MouseHit(button);
+        const bool is_button_down = buttonhitstate[code];
+        buttonhitstate[code] = false;
+        return is_button_down;
     }
 
-    bool GraphicsWindow::KeyHit(const int keycode)
+    bool GraphicsWindow::ButtonDown(const int code)
     {
-        return window_ptr->KeyHit(keycode);
+        return buttondownstate[code];
     }
 
-    bool GraphicsWindow::KeyDown(const int keycode)
+    bool GraphicsWindow::ButtonReleased(const int code)
     {
-        return window_ptr->KeyDown(keycode);
+        const bool is_button_down = buttondownstate[code];
+        const bool is_button_up = buttonreleasedstate[code];
+
+        if (!is_button_down && !is_button_up)
+        {
+            buttonreleasedstate[code] = true;
+            return true;
+        }
+
+        return false;
     }
 
-    static Vec2 rawmouseaxis = Vec2(0);
+    bool GraphicsWindow::ButtonAnyDown()
+    {
+        return std::any_of(buttondownstate.begin(), buttondownstate.end(),
+            [](const auto& p) { return p.second; });
+    }
+
+    bool GraphicsWindow::ButtonAnyHit()
+    {
+        const bool is_button_down = anybuttonhit;
+        anybuttonhit = false;
+        return is_button_down;
+    }
+
+    int GraphicsWindow::LastButtonPressed()
+    {
+        return lastbutton;
+    }
+
+    void GraphicsWindow::SetMousePosition(const int x, const int y)
+    {
+        window_ptr->SetMousePosition(x, y);
+    }
+
+    Leadwerks::Vec2 GraphicsWindow::GetMousePosition()
+    {
+        return window_ptr->GetMousePosition();
+    }
+
+    //static Vec2 rawmouseaxis = Vec2(0);
     Vec2 GraphicsWindow::GetMouseAxis(const float dpi)
     {
         Vec2 t = Vec2(0);
         t.x = rawmouseaxis.x / dpi;
         t.y = rawmouseaxis.y / dpi;
         return t;
+    }
+
+    void GraphicsWindow::SetCursor(bool cursor)
+    {
+        if (cursor)
+            window_ptr->ShowMouse();
+        else
+            window_ptr->HideMouse();
+    }
+
+    void GraphicsWindow::Flush()
+    {
+        buttondownstate.clear();
+        buttonhitstate.clear();
+        anybuttonhit = false;
+
+        if (window_ptr != NULL)
+        {
+            window_ptr->FlushKeys();
+            window_ptr->FlushMouse();
+        }
+    }
+
+    void GraphicsWindow::PumpButtonCodeDown(const int code)
+    {
+        if (window_ptr == NULL) return;
+
+        bool actually_down = false;
+        if (code < InputSystem::BUTTON_FIRST_KEY)
+            actually_down = window_ptr->MouseDown(code);
+        else
+            actually_down = window_ptr->KeyDown(code);
+
+        buttondownstate[code] = actually_down;
+        buttonhitstate[code] = actually_down;
+        buttonreleasedstate[code] = !actually_down;
+        anybuttonhit = actually_down;
+        if (lastbutton != code) lastbutton = code;
+    }
+
+    void GraphicsWindow::PumpButtonCodeUp(const int code)
+    {
+        if (window_ptr == NULL) return;
+
+        bool actually_up = false;
+        if (code < InputSystem::BUTTON_FIRST_KEY)
+            actually_up = window_ptr->MouseDown(code);
+        else
+            actually_up = window_ptr->KeyDown(code);
+
+        buttondownstate[code] = actually_up;
+        buttonhitstate[code] = actually_up;
+        anybuttonhit = actually_up;
+    }
+
+    void GraphicsWindow::PumpMouseWheelDir(const int dir)
+    {
+        // Reset the mousewheel.
+        if (buttondownstate[InputSystem::BUTTON_MOUSE_WHEELDOWN])
+        {
+            buttondownstate[InputSystem::BUTTON_MOUSE_WHEELDOWN] = false;
+            buttonhitstate[InputSystem::BUTTON_MOUSE_WHEELDOWN] = false;
+            anybuttonhit = false;
+        }
+
+        if (buttondownstate[InputSystem::BUTTON_MOUSE_WHEELUP])
+        {
+            buttondownstate[InputSystem::BUTTON_MOUSE_WHEELUP] = false;
+            buttonhitstate[InputSystem::BUTTON_MOUSE_WHEELUP] = false;
+            anybuttonhit = false;
+        }
+
+        float fixed_dir = Math::Sgn(static_cast<float>(dir));
+        if (static_cast<float>(fixed_dir) != 0)
+        {
+            if (fixed_dir > 0)
+            {
+                if (!buttondownstate[InputSystem::BUTTON_MOUSE_WHEELDOWN])
+                {
+                    buttondownstate[InputSystem::BUTTON_MOUSE_WHEELDOWN] = true;
+                    buttonhitstate[InputSystem::BUTTON_MOUSE_WHEELDOWN] = true;
+                    anybuttonhit = true;
+                    if (lastbutton != InputSystem::BUTTON_MOUSE_WHEELDOWN) lastbutton = InputSystem::BUTTON_MOUSE_WHEELDOWN;
+                }
+            }
+            else if (fixed_dir < 0)
+            {
+                if (!buttondownstate[InputSystem::BUTTON_MOUSE_WHEELUP])
+                {
+                    buttondownstate[InputSystem::BUTTON_MOUSE_WHEELUP] = true;
+                    buttonhitstate[InputSystem::BUTTON_MOUSE_WHEELUP] = true;
+                    anybuttonhit = true;
+                    if (lastbutton != InputSystem::BUTTON_MOUSE_WHEELUP) lastbutton = InputSystem::BUTTON_MOUSE_WHEELUP;
+                }
+            }
+        }
     }
 
 #if defined (_WIN32)
@@ -362,8 +500,8 @@ namespace App
 
             if (raw->header.dwType == RIM_TYPEMOUSE)
             {
-                rawmouseaxis.x += float(raw->data.mouse.lLastX);
-                rawmouseaxis.y += float(raw->data.mouse.lLastY);
+                window->rawmouseaxis.x += float(raw->data.mouse.lLastX);
+                window->rawmouseaxis.y += float(raw->data.mouse.lLastY);
             }
             break;
         }
@@ -373,16 +511,19 @@ namespace App
             break;
 
         case WM_MBUTTONDBLCLK:
+            window->PumpButtonCodeDown(Mouse::Middle);
             EventQueue::Emit(Event::MouseDown, window, Mouse::Middle);
             EventQueue::Emit(Event::DoubleClick, window, Mouse::Middle);
             break;
 
         case WM_RBUTTONDBLCLK:
+            window->PumpButtonCodeDown(Mouse::Right);
             EventQueue::Emit(Event::MouseDown, window, Mouse::Right);
             EventQueue::Emit(Event::DoubleClick, window, Mouse::Right);
             break;
 
         case WM_LBUTTONDBLCLK:
+            window->PumpButtonCodeDown(Mouse::Left);
             EventQueue::Emit(Event::MouseDown, window, Mouse::Left);
             EventQueue::Emit(Event::DoubleClick, window, Mouse::Left);
             break;
@@ -400,6 +541,7 @@ namespace App
                 break;
             }
 
+            window->PumpButtonCodeDown(button);
             EventQueue::Emit(Event::MouseDown, window, button, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             EventQueue::Emit(Event::DoubleClick, window, button, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             break;
@@ -433,6 +575,7 @@ namespace App
                 }
                 break;
             }
+            window->PumpButtonCodeDown(button);
             EventQueue::Emit(Event::MouseDown, window, button, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             break;
         }
@@ -464,6 +607,8 @@ namespace App
                 }
                 break;
             }
+
+            window->PumpButtonCodeUp(button);
             EventQueue::Emit(Event::MouseUp, window, button, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             break;
         }
@@ -475,13 +620,20 @@ namespace App
             EventQueue::Emit(Event::MouseMove, window, 0, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             break;
 
+        case WM_MOUSEWHEEL:
+            window->PumpMouseWheelDir(-GET_WHEEL_DELTA_WPARAM(wparam) / 120);
+            EventQueue::Emit(Event::MouseWheel, window, -GET_WHEEL_DELTA_WPARAM(wparam) / 120, 0, 0, 0, 0);
+            break;
+
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
+            window->PumpButtonCodeDown(wparam);
             EventQueue::Emit(Event::KeyDown, window, wparam);
             break;
 
         case WM_KEYUP:
         case WM_SYSKEYUP:
+            window->PumpButtonCodeUp(wparam);
             EventQueue::Emit(Event::KeyUp, window, wparam);
             break;
 
@@ -562,6 +714,13 @@ namespace App
             {
                 current->Release();
                 current = NULL;
+            }
+
+            auto BUTTON_LAST = InputSystem::BUTTON_MOUSE_WHEELRIGHT;
+            for (int i = 0; i < BUTTON_LAST + 1; i++)
+            {
+                auto code = (InputSystem::ButtonCode)i;
+                current->buttonreleasedstate[code] = true;
             }
         }
 

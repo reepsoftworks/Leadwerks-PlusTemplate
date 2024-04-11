@@ -4,19 +4,36 @@
 namespace Leadwerks
 {
 	// Time
+	extern long starttime__;
+	extern bool timeinitialized;
 	extern void InitTime();
+
 	bool PauseState()
 	{
 		return timepausestate;
 	}
 
-	extern long starttime__;
-	extern bool timeinitialized;
+	float appspeed__;
+	double speedsmoothing = 0.5;
+	void CalcAppSpeed()
+	{
+		double frametime = 1000.0 / ((double)60);
+		appspeed__ = float(speed__ * speedsmoothing) + ((1.0 - speedsmoothing) * (1.0 / frametime));
+	}
+
+	float GetAppSpeed()
+	{
+		return appspeed__;
+	}
+
 	void UpdateTime(const int framePerSecond)
 	{
-		double speedsmoothing = 0.5;
-		double frametime = 1000.0 / ((double)framePerSecond);
+		CalcAppSpeed(); // App speed isn't effected by pausing!
+
 		stepmode__ = 0;
+		double frametime = 1000.0 / ((double)framePerSecond);
+		static bool lastpausestate = timepausestate;
+		if (timepausestate != lastpausestate) EmitEvent(EVENT_PAUSESTATE, NULL, (int)timepausestate);
 		if (!timepausestate)
 		{
 			long newtime = Time::Millisecs();

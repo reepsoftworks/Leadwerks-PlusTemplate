@@ -51,6 +51,7 @@ namespace Leadwerks
 	enum
 	{
 		EVENT_NONE = 0,
-		EVENT_STARTRENDERER = 10000
+		EVENT_STARTRENDERER = 10000,
+		EVENT_PAUSESTATE
 	};
 }

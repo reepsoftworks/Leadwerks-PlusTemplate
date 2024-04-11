@@ -7,6 +7,15 @@ using namespace App;
 SampleUI* SampleUI::currentui = NULL;
 
 // UI Commands
+void CC_OpenMapList(std::vector<std::string> pArgV)
+{
+	if (SampleUI::currentui)
+	{
+		SampleUI::currentui->CallMapList();
+	}
+}
+static ConCommand maplistdialog("maplistdialog", CC_OpenMapList, CVAR_DEFAULT, "");
+
 void CC_OpenSettings(std::vector<std::string> pArgV)
 {
 	if (SampleUI::currentui)
@@ -15,6 +24,15 @@ void CC_OpenSettings(std::vector<std::string> pArgV)
 	}
 }
 static ConCommand settingsdialog("settingsdialog", CC_OpenSettings, CVAR_DEFAULT, "Opens settings panel. Usage: settingsdialog");
+
+void CC_OpenQuitConfim(std::vector<std::string> pArgV)
+{
+	if (SampleUI::currentui)
+	{
+		SampleUI::currentui->CallQuit();
+	}
+}
+static ConCommand quitconfirm("quitconfirm", CC_OpenQuitConfim, CVAR_HIDDEN, "");
 
 void CC_StatsMode(std::string pArgV)
 {
@@ -33,13 +51,16 @@ static ConVar stats("stats", "0", CVAR_SAVE, "Shows rendering and time statistic
 // SampleUI
 SampleUI::SampleUI()
 {
-	statsgadget = NULL;
+	maplistgadget = NULL;
 	settinggadget = NULL;
+	quitconfirmgadget = NULL;
+	statsgadget = NULL;
 	console = NULL;
 	loadingbackground = NULL;
 	loadingicon = NULL;
 	loadingspinner.fill(NULL); 
 	loadtick = 0;
+	loading = false;
 
 	menushown = false;
 	margin = 0;
@@ -48,6 +69,7 @@ SampleUI::SampleUI()
 	fontmenu = NULL;
 	resourcefile = NULL;
 	widgetsopened = 0;
+	ingame = false;
 
 	buttons.clear();
 }
@@ -56,7 +78,9 @@ SampleUI::~SampleUI()
 {
 	FreeObject(console);
 	FreeObject(statsgadget);
+	FreeObject(maplistgadget);
 	FreeObject(settinggadget);
+	FreeObject(quitconfirmgadget);
 	
 	FreeObject(loadingbackground);
 	FreeObject(loadingicon);
@@ -70,11 +94,13 @@ SampleUI::~SampleUI()
 	}
 
 	loadtick = 0;
+	loading = false;
 	menushown = false;
 	margin = 0;
 	resourcefile = NULL;
 	buttons.clear();
 	widgetsopened = 0;
+	ingame = false;
 
 	RemoveCallback(this);
 }
@@ -82,11 +108,13 @@ SampleUI::~SampleUI()
 void SampleUI::Start()
 {
 	// Create our gadgets.
+	maplistgadget = CreateGadget<MapListGadget>(window);
 	settinggadget = CreateGadget<SettingsGadget>(window);
+	quitconfirmgadget = CreateGadget<QuitConfirmGadget>(window);
 	statsgadget = CreateGadget<StatsGadget>(window);
 	console = CreateGadget<ConsoleGadget>(window);
 	
-	if (!console || !settinggadget || !statsgadget)
+	if (!console || !maplistgadget || !settinggadget  || !quitconfirmgadget || !statsgadget)
 	{
 		OS::MessageError("Error", "Failed to create one ore more gadgets!");
 		Debug::Stop();
@@ -94,8 +122,10 @@ void SampleUI::Start()
 
 	// Apply visiblity
 	console->Hide();
+	maplistgadget->Hide();
 	settinggadget->Hide();
-	ShowStats(stats.GetInt());
+	quitconfirmgadget->Hide();
+	ShowStats(0);
 
 	// Load resources
 	auto j3 = JSON::Load("UI/SampleUI/resource.json");
@@ -155,7 +185,27 @@ void SampleUI::Start()
 	}
 
 	// Start Translator
-	Translator::LoadTokenList("UI/gameui_english.json");
+	std::string str = "UI/gameui_";
+	Directory* dir = FileSystem::LoadDir("UI");
+	if (dir)
+	{
+		for (const auto& p : dir->files)
+		{
+			// Skip folders.
+			auto name = FileSystem::StripAll(p);
+			if (FileSystem::GetFileType(name) == 2) continue;
+
+			// Skip files with no extention or files not json.
+			auto ext = FileSystem::ExtractExt(p);
+			if (ext.empty() || ext != "json") continue;
+
+			// Prefix check.
+			if (String::Left(name, 7) == "gameui_")
+			{
+				Translator::LoadTokenList("UI/" + name + "." + ext);
+			}
+		}
+	}
 
 	// Build Loading screen.
 	BuildLoadingScreen();
@@ -175,6 +225,16 @@ void SampleUI::ToggleSettingsDialog(const bool show)
 	}
 }
 
+void SampleUI::CallMapList()
+{
+	if (maplistgadget) maplistgadget->Show();
+}
+
+void SampleUI::CallQuit()
+{
+	if (quitconfirmgadget) quitconfirmgadget->Show();
+}
+
 void SampleUI::ShowStats(const int mode)
 {
 	if (statsgadget)
@@ -190,6 +250,11 @@ void SampleUI::ToggleConsole()
 		console->Hide();
 	else
 		console->Show();
+}
+
+void SampleUI::ForceHideConsole()
+{
+	console->Hide();
 }
 
 // Loading Screen 
@@ -250,11 +315,13 @@ void SampleUI::DrawLoadingScreen()
 		{
 			if (loadingspinner[loadtick] != NULL)
 			{
-				Time::Delay(200);
-				framebuffer->DrawImage(loadingspinner[loadtick], 8, 8, 128, 128);
+				if (loading) Time::Delay(200);
+				framebuffer->DrawImage(loadingspinner[loadtick], 8, 8, 96, 96);
 			}
 		}
 	}
+
+	if (loadtick > 1) loading = true;
 }
 
 void LoadingScreenDrawCallback(Object* source, Object* extra)
@@ -311,12 +378,6 @@ void SampleUI::UpdateLoadingBackgroundCallback(Object* source, Object* extra)
 				scene->SetLoadingBackground(ui->loadingbackground);
 			}
 		}
-
-		// Wait.
-		//Time::Delay(10);
-
-		// Draw the loading screen.
-		ui->DrawLoadingScreen();
 	}
 }
 
@@ -353,15 +414,15 @@ void SampleUI::BuildMenuPanel()
 	menupanel = App::CreateGadget<UIGadget>(window);
 	menupanel->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
 	menupanel->SetPosition(iVec2(margin, y));
-	menupanel->SetSize(iVec2(150, 150));
+	menupanel->SetSize(iVec2(150, 150)); //150^2
 
 	title = App::CreateGadget<UIGadget>(window);
 	title->SetFont(fonttitle);
 	title->SetText(Program::GetTitle());
 
-
 	title->SetPosition(iVec2(margin - 26, y - title->GetSize().y - titleoffset));
 	title->SetParent(menupanel);
+	title->SetDropShadowMode(true);
 
 	// Buttons.
 	if (resourcefile != NULL)
@@ -393,6 +454,33 @@ void SampleUI::BuildMenuPanel()
 					}
 					if (resourcefile["menu"]["items"][index]["command_ingame"].is_string()) btn->keyvalues["command_ingame"] = resourcefile["menu"]["items"][index]["command_ingame"].get<std::string>();
 
+					if (resourcefile["menu"]["color"].is_array() && resourcefile["menu"]["color"].size() == 4)
+					{
+						btn->SetColor(resourcefile["menu"]["color"][0], 
+							resourcefile["menu"]["color"][1], 
+							resourcefile["menu"]["color"][2], 
+							resourcefile["menu"]["color"][3], UIGADGET_COLOR_BASE);
+					}
+					btn->SetDropShadowMode(true);
+
+					/*
+					if (resourcefile["menu"]["highlightcolor"].is_array() && resourcefile["menu"]["highlightcolor"].size() == 4)
+					{
+						btn->SetColor(resourcefile["menu"]["highlightcolor"][0], 
+							resourcefile["menu"]["color"][1], 
+							resourcefile["menu"]["highlightcolor"][2], 
+							resourcefile["menu"]["highlightcolor"][3], UIGADGET_COLOR_HIGHLIGHT);
+					}
+
+					if (resourcefile["menu"]["sunkencolor"].is_array() && resourcefile["menu"]["sunkencolor"].size() == 4)
+					{
+						btn->SetColor(resourcefile["menu"]["sunkencolor"][0], 
+							resourcefile["menu"]["sunkencolor"][1], 
+							resourcefile["menu"]["sunkencolor"][2],
+							resourcefile["menu"]["sunkencolor"][3], UIGADGET_COLOR_SUNKEN);
+					}
+					*/
+
 					btn->Hide();
 					buttons.push_back(btn);
 				}
@@ -423,13 +511,18 @@ void SampleUI::ShowMenuPanel(const bool ingame)
 {
 	DPrint("Showing menu");
 
+	this->ingame = ingame;
+
 	// Refresh
 	RefreshMenu(iVec2(0, 0));
 
-	menupanel->FadeIn(1.0f, 0.10f);
+	menupanel->FadeIn(1.0f, 0.05f);
 
 	// If we're paused, show the curtain.
-	//if (timepausestate) curtain->Show();
+	if (this->ingame) curtain->Show();
+
+	// Show stats if enabled.
+	ShowStats(stats.GetInt());
 
 	menushown = true;
 }
@@ -439,7 +532,8 @@ void SampleUI::HideMenuPanel()
 	DPrint("Hiding menu");
 
 	menupanel->Hide();
-	//curtain->Hide();
+
+	if (curtain->GetHidden()) curtain->Hide();
 
 	menushown = false;
 }
@@ -464,7 +558,7 @@ void SampleUI::RefreshMenu(const iVec2& sz)
 		for (std::size_t i = 0; i < buttons.size(); i++)
 		{
 			auto kv = buttons[i]->keyvalues;
-			if (Scene::GetCurrent()->InMap())
+			if (ingame)
 			{
 				if (!kv["label_ingame"].empty())
 				{
@@ -507,30 +601,57 @@ bool SampleUI::ProcessEvent(const Event& e)
 	}
 	else if (e.id == Event::WidgetAction)
 	{
-		for (std::size_t i = 0; i < buttons.size(); i++)
+		if (e.source == quitconfirmgadget)
 		{
-			if (e.source == buttons[i])
+			if (e.data == 0) EmitEvent(Event::Quit);	
+		}
+		else
+		{
+			for (std::size_t i = 0; i < buttons.size(); i++)
 			{
-				auto scene = Scene::GetCurrent();
-				if (scene)
+				if (e.source == buttons[i])
 				{
 					std::string cmd = "command";
-					bool ingame = Scene::GetCurrent()->InMap();
-					if (ingame) cmd += "_ingame";
-					auto command = buttons[i]->keyvalues[cmd];
-					if (!command.empty()) ExecuteCommand(command);
+					if (!ingame)
+					{
+						auto command = buttons[i]->keyvalues[cmd];
+						if (!command.empty()) ExecuteCommand(command);
+					}
+					else
+					{
+						auto gamecmd = cmd + "_ingame";
+						auto command = buttons[i]->keyvalues[gamecmd];
+						if (!command.empty())
+							ExecuteCommand(command);
+						else
+						{
+							auto command = buttons[i]->keyvalues[cmd];
+							if (!command.empty()) ExecuteCommand(command);
+						}
+					}
 				}
 			}
 		}
 	}
 	else if (e.id == Event::WidgetOpen)
 	{
+		if (e.source == quitconfirmgadget)
+		{
+			ForceHideConsole();
+			ToggleSettingsDialog(false);
+			menupanel->Hide();
+		}
+
 		auto scene = Scene::GetCurrent();
 		if (scene)
 		{
 			if (Scene::GetCurrent()->InMap())
 			{
+				//Time::Pause();
 			}
+
+			// This is a dumb hack to fix widgetsopened being the max int value when set to 0 for some reason.
+			if (widgetsopened > 1000) widgetsopened = 0;
 
 			if (widgetsopened == 0)
 			{
@@ -541,6 +662,11 @@ bool SampleUI::ProcessEvent(const Event& e)
 	}
 	else if (e.id == Event::WidgetClose)
 	{
+		if (e.source == quitconfirmgadget)
+		{
+			if (menupanel->GetHidden()) menupanel->Show();
+		}
+
 		auto scene = Scene::GetCurrent();
 		if (scene)
 		{
@@ -552,12 +678,19 @@ bool SampleUI::ProcessEvent(const Event& e)
 		widgetsopened--;
 		if (!timepausestate)
 		{
-			if (widgetsopened == 0) curtain->FadeOut();
-			
+			if (widgetsopened == 0 && !ingame) curtain->FadeOut();
 		}
 	}
 
 	return true;
+}
+
+void SampleUI::ForceHidePanels()
+{
+	if (maplistgadget) maplistgadget->Hide();
+	if (settinggadget) settinggadget->Hide();
+	if (quitconfirmgadget) quitconfirmgadget->Hide();
+	widgetsopened = 0;
 }
 
 // Scene callback
@@ -569,19 +702,17 @@ void SampleUI::SceneLoadedCallback(Object* source, Object* extra)
 	auto ui = CastObject<SampleUI>(extra);
 	if (ui)
 	{
-		// TODO:
-		// When we have an input system, check to see if the 
-		// Action Set is currently not the default. If it's not
-		// Forcefully hide the console!
-		/*
-		if (!Input::ActionState().empty())
-		{
-			ui->ToggleConsole(false);
-		}
-		*/
+		// Force hide the console if the map loaded.
+		ui->ForceHideConsole();
 
 		// Always hide opened panels
-		ui->ToggleSettingsDialog(false);
+		ui->ForceHidePanels();
+
+		// We're def not loading anymore.
+		ui->loading = false;
+
+		// Hide the Menu panel.
+		ui->HideMenuPanel();
 	}
 }
 
@@ -596,6 +727,9 @@ void SampleUI::SceneClearCallback(Object* source, Object* extra)
 		// Reset the background.
 		UpdateLoadingBackgroundCallback(source, extra);
 
+		ui->ForceHidePanels();
+		ui->loading = false;
+		ui->ingame = false;
 
 		// If we're not in a map nor loading anything, show the menu!
 		// If we're doing something, hide it!
@@ -618,8 +752,8 @@ SampleUI* SampleUI::Create(App::GraphicsWindow* window)
 	auto scene = Scene::GetCurrent();
 	if (scene)
 	{
-		SetCallback(CALLBACK_LOADINGSCREEN, scene, LoadingScreenDrawCallback, currentui);
 		SetCallback(CALLBACK_SCENELOAD, scene, SampleUI::UpdateLoadingBackgroundCallback, currentui);
+		SetCallback(CALLBACK_LOADINGSCREEN, scene, LoadingScreenDrawCallback, currentui);
 		SetCallback(CALLBACK_SCENECOMPLETE, scene, SampleUI::SceneLoadedCallback, currentui);
 		SetCallback(CALLBACK_SCENECLEAR, scene, SampleUI::SceneClearCallback, currentui);
 		SetCallback(CALLBACK_SCENEREADY, scene, SampleUI::SceneClearCallback, currentui);

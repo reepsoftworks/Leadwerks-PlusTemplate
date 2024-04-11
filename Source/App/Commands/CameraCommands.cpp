@@ -97,3 +97,39 @@ void CC_Fov(std::string pArgV)
 	Settings::SetFov(setting);
 }
 static ConVar fov("fov", "70", CVAR_SAVE, "Usage: fov <float (Default = 70)>", CC_Fov);
+
+void CC_ShowPhysics(std::string pArgV)
+{
+	if (pArgV.empty())
+		return;
+
+	DPrint("Setting d_physics to " + pArgV);
+
+	auto setting = String::Int(pArgV);
+	if (MainCamera) MainCamera->SetDebugPhysicsMode(setting);
+}
+static ConVar d_physics("d_physics", "0", CVAR_DEFAULT, "Usage: d_physics <int>", CC_ShowPhysics);
+
+void CC_ShowBounds(std::string pArgV)
+{
+	if (pArgV.empty())
+		return;
+
+	DPrint("Setting d_aabb to " + pArgV);
+
+	auto setting = String::Int(pArgV);
+	if (MainCamera) MainCamera->SetDebugEntityBoxesMode(setting);
+}
+static ConVar d_aabb("d_aabb", "0", CVAR_DEFAULT, "Usage: d_aabb <int>", CC_ShowBounds);
+
+void CC_ShowNav(std::string pArgV)
+{
+	if (pArgV.empty())
+		return;
+
+	DPrint("Setting d_nav to " + pArgV);
+
+	auto setting = String::Int(pArgV);
+	if (MainCamera) MainCamera->SetNavigationMode(setting);
+}
+static ConVar d_nav("d_nav", "0", CVAR_DEFAULT, "Usage: d_nav <int>", CC_ShowNav);

@@ -18,10 +18,7 @@ int main(int argc, const char* argv[])
 
     // Game Loop
     static bool running = true;
-    while (running)
-    {
-        running = app->Update();
-    }
+    while (running) running = app->Update();
 
     return 0;
 }

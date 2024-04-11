@@ -12,18 +12,19 @@
 // Default Engine
 #include "Leadwerks.h"
 
+// nlohmann json
 #define EOF -1
 #include "Libraries/nlohmann_json/single_include/nlohmann/json.hpp"
 #undef EOF
 
+// tableplusplus
 #include "Libraries/tableplusplus/tableplusplus.h"
 using namespace tableplusplus;
 
-// imgui
+// ImGui
 #include "Libraries/imgui/include/imconfig.h"
 #include "Libraries/imgui/include/imgui.h"
 #include "Libraries/imgui/include/imgui_impl_opengl3.h"
-//#include "Libraries/imgui/include/imgui_impl_opengl3_loader.h"
 #include "Libraries/imgui/include/imgui_impl_win32.h"
 
 namespace Leadwerks
@@ -69,7 +70,7 @@ namespace Leadwerks
 #include "Classes/FileStream.h"
 #include "Classes/Config.h"
 #include "Classes/JSON.h"
-//#include "Classes/GamePad.h"
+#include "Classes/GamePad.h"
 #include "Classes/Tokenizer.h"
 #include "Classes/ConCommand.h"
 #include "Classes/CVar.h"
@@ -79,7 +80,6 @@ namespace Leadwerks
 #include "Classes/ImGuiLayer.h"
 #include "Classes/AssetLoader.h"
 #include "Classes/EntityVector.h"
-#include "Classes/Input.h"
 
 // Actor defs
 typedef int exposed_int;
@@ -92,6 +92,8 @@ typedef Leadwerks::Vec4 exposed_vec4;
 typedef Leadwerks::Entity exposed_entity;
 typedef void exposed_input;
 typedef void exposed_output;
+
+#define class_actor class
 #define ATTACH_ENTITY_TO_ACTOR(_entity_, _actor_) if (_entity_->GetString("actor") == #_actor_) _entity_->SetActor(new _actor_())
 
 #ifdef DEBUG

@@ -36,6 +36,17 @@ namespace App
 		CALLBACK_SCENECLEAR
 	};
 
+	// 
+	enum
+	{
+		EVENT_LANGUAGE = 11000,
+
+		// Input
+		EVENT_DEVICE,
+		EVENT_ACTIONSET,
+		EVENT_DEVICESTATE
+	};
+
 	class Program//lua
 	{
 	public:
@@ -71,11 +82,14 @@ namespace App
 #include "Scene.h"
 #include "SceneActor.h"
 #include "Translator.h"
+//#include "Input.h"
 
 // Gadgets
 #include "Gadgets/StatsGadget.h"
 #include "Gadgets/ConsoleGadget.h"
 #include "Gadgets/SettingsGadget.h"
+#include "Gadgets/QuitConfirmGadget.h"
+#include "Gadgets/MapListGadget.h"
 
 // UI
 #include "UI/UIGadget.h"
