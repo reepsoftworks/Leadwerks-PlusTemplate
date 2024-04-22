@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../../App/App.h"
+#include "../../SampleApp.h"
 
 class_actor BackgroundMenu : public App::SceneActor
 {

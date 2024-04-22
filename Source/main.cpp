@@ -27,9 +27,16 @@ int main(int argc, const char* argv[])
 
 int main(int argc, const char* argv[])
 {
-    Leadwerks::Window* window = Leadwerks::Window::Create("Leadwerks", 0, 0, 1280, 720, Window::Titlebar | Window::Center);
-    Leadwerks::Context* context = Leadwerks::Context::Create(window);
+   // Leadwerks::Window* window = Leadwerks::Window::Create("Leadwerks", 0, 0, 1280, 720, Window::Titlebar | Window::Center);
+    //Leadwerks::Context* context = Leadwerks::Context::Create(window);
 
+    GraphicWindowSettings windowsettings = GraphicWindowSettings();
+    auto window = GraphicsWindow::Create(Program::GetTitle(), windowsettings);
+    if (!window)
+    {
+        OS::MessageError("Error", "Failed to create the grapics window!");
+        return false;
+    }
     auto world = World::Create();
     auto camera = Camera::Create();
     camera->SetClearColor(0.125f);
@@ -44,6 +51,7 @@ int main(int argc, const char* argv[])
     Material* material = AssetLoader::LoadMaterial("Materials/Developer/grid02.mat");
     model->SetMaterial(material);
 
+#if 0
     // Test Material values....
     MaterialValue myvalue;
     myvalue.name = "surfprop";
@@ -64,6 +72,9 @@ int main(int argc, const char* argv[])
     {
         shader->SetInt("simpleshading", 1);
     }
+#endif
+
+    Input::Initalize();
 
     bool running = true;
     while (running)
@@ -83,11 +94,17 @@ int main(int argc, const char* argv[])
             }
         }
 
+        if (Input::ActionHit("Pause"))
+        {
+            Print("Hello");
+        }
+
         model->Turn(0, 1.0f * Time::GetSpeed(), 0);
         UpdateTime();
         world->Update();
         world->Render();
-        UpdateRender(context);
+        window->Sync();
+        //UpdateRender(context);
     }
 
     return true;

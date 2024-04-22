@@ -9,8 +9,8 @@ extern ConVar screenwidth;
 extern ConVar screenheight;
 
 // TODO: move to user app directory...
-#define USER_CONFIG "config.cfg"
-#define USER_CONFIGEDITOR "config_editor.cfg"
+#define USER_CONFIG "Config/config.cfg"
+#define USER_CONFIGEDITOR "Config/config_editor.cfg"
 
 #define PATH_SPLASH L"UI/splash.bmp"
 
@@ -113,21 +113,25 @@ bool SampleApp::Update()
 			running = false;
 			break;
 		}
+		else if (e.id == EVENT_DEVICESTATE)
+		{
+
+		}
 	}
 
 	// Allow special features for debug/devmode.
 	auto appmode = Program::GetAppMode();
 	if (appmode > Program::NormalMode)
 	{
-		if (window->ButtonHit(Key::F1)) // TODO: Replace me with the input system.
-		//if (Input::ActionHit("Console"))
+		//if (window->ButtonHit(Key::F1)) // TODO: Replace me with the input system.
+		if (Input::ActionHit("Console"))
 		{
 			ui->ToggleConsole();
 		}
 	
 		// Fullscreen toggle.
-		if (window->ButtonHit(Key::F11)) // TODO: Replace me with the input system.
-		//if (Input::ActionHit("Fullscreen"))
+		//if (window->ButtonHit(Key::F11)) // TODO: Replace me with the input system.
+		if (Input::ActionHit("Fullscreen"))
 		{
 			bool fullscreen = false;
 			GraphicWindowSettings windowsettings = window->CurrentSettings();
@@ -146,10 +150,15 @@ bool SampleApp::Update()
 		}
 
 		// Terminate
-		if (window->ButtonHit(Key::End)) // TODO: Replace me with the input system.
-		//if (Input::ActionHit("Terminate"))
+		//if (window->ButtonHit(Key::End)) // TODO: Replace me with the input system.
+		if (Input::ActionHit("Terminate"))
 		{
 			EmitEvent(Event::Quit);
+		}
+
+		if (Input::ActionHit("Jump"))
+		{
+			Print("Jump");
 		}
 	}
 
@@ -163,7 +172,7 @@ void SampleApp::Shutdown()
 {
 	// Push window settings to cvars so they are saved.
 	// Skip saving these settings if we're in editor mode.
-	if (window && (Program::GetAppMode() != Program::EditorMode))
+	if (window && (Program::GetAppMode() == Program::NormalMode))
 	{
 		auto currentwindowsettings = window->CurrentSettings();
 		SetConVar("screenwidth", String(currentwindowsettings.size.x));

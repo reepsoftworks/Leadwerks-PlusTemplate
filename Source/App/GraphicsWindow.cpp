@@ -89,6 +89,9 @@ namespace App
         splash = NULL;
         uibasecolor = NULL;
         rawmouseaxis = Vec2(0);
+        buttondownstate.clear();
+        buttonhitstate.clear();
+        buttonreleasedstate.clear();
 	}
 
 	GraphicsWindow::~GraphicsWindow()
@@ -717,9 +720,12 @@ namespace App
             }
 
             auto BUTTON_LAST = InputSystem::BUTTON_MOUSE_WHEELRIGHT;
+
             for (int i = 0; i < BUTTON_LAST + 1; i++)
             {
                 auto code = (InputSystem::ButtonCode)i;
+                current->buttonhitstate[code] = false;
+                current->buttondownstate[code] = false;
                 current->buttonreleasedstate[code] = true;
             }
         }

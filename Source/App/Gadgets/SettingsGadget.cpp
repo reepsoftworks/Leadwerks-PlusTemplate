@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "../App.h"
 
+#include "../Input/ButtonCode.h"
+#include "../Input/InputDevice.h"
+
+// https://www.unknowncheats.me/forum/c-and-c-/495094-simple-custom-imgui-hotkey-keybind.html
+
 namespace App
 {
 	using namespace Leadwerks;
@@ -108,6 +113,63 @@ namespace App
 			ret = style;
 		}
 		return ret;
+	}
+
+	
+	void ButtonAssignment(const char* action, InputSystem::ButtonCode data, InputSystem::InputDevice* device)
+	{
+		//static bool waitingforkey = false;
+		static std::map<std::string, bool> waitingforkey;
+		if (waitingforkey[action] == false)
+		{
+			if (ImGui::Button(InputSystem::ButtonCodeToString(data).c_str(), ImVec2(80, 20)))
+			{
+				device->Suspend(true);
+				waitingforkey[action] = true;
+				GraphicsWindow::GetCurrent()->Flush();
+			}
+		}
+		else if (waitingforkey[action] == true)
+		{
+			ImGui::Button("...", ImVec2(80, 20));
+
+			if (GraphicsWindow::GetCurrent()->ButtonAnyHit())
+			{
+				auto key = GraphicsWindow::GetCurrent()->LastButtonPressed();
+				if (key > InputSystem::BUTTON_NONE)
+				{
+					device->SetAction(action, (InputSystem::ButtonCode)key);
+					waitingforkey[action] = false;
+					GraphicsWindow::GetCurrent()->Flush();
+					device->Suspend(false);
+				}
+			}
+		}
+	}
+
+
+	void DrawButtonAssignment(const char* action, InputSystem::InputDevice* device, std::string setname = "")
+	{
+		ImGui::Text(action);
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 400);
+
+		if (!device->GetActionData(action, setname).buttons.empty())
+		{
+			auto data = device->GetActionData(action, setname).buttons[0];
+			ButtonAssignment(action, data, device);
+		}
+		else
+		{
+			auto data = device->GetActionData(action, setname).btnaxis;
+			ButtonAssignment(action, data.up, device);
+			ImGui::SameLine();
+			ButtonAssignment(action, data.down, device);
+			ImGui::SameLine();
+			ButtonAssignment(action, data.left, device);
+			ImGui::SameLine();
+			ButtonAssignment(action, data.right, device);
+		}
 	}
 
 	void SettingsGadget::DrawUI()
@@ -324,17 +386,37 @@ namespace App
 
 					ImGui::EndTabItem();
 				}
-				if (ImGui::BeginTabItem("Controls"))
+
+				if (ImGui::BeginTabItem("Keyboard"))
 				{
-					ImGui::Text("TODO Controls");
+					auto device = Input::GetDevice();
+
+					DrawButtonAssignment("Pause", device);
+					DrawButtonAssignment("Console", device);
+					DrawButtonAssignment("Screenshot", device);
+
+					ImGui::Text("InGameControls");
+					ImGui::Separator();
+
+					DrawButtonAssignment("Crouch", device, "InGameControls");
+					DrawButtonAssignment("Jump", device, "InGameControls");
+					DrawButtonAssignment("QuickSpin", device, "InGameControls");
+					DrawButtonAssignment("Use", device, "InGameControls");
+					DrawButtonAssignment("ZoomIn", device, "InGameControls");
+					DrawButtonAssignment("ZoomOut", device, "InGameControls");
+
+					//DrawButtonAssignment("Movement", device, "InGameControls");
+
 					ImGui::EndTabItem();
 				}
 
+				/*
 				if (ImGui::BeginTabItem("Sound"))
 				{
 					ImGui::Text("TODO Sound");
 					ImGui::EndTabItem();
 				}
+				*/
 
 				ImGui::EndTabBar();
 			}

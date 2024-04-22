@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "BackgroundMenu.h"
-#include "../../SampleApp.h"
-#include "../../SampleUI.h"
 
 using namespace Leadwerks;
 

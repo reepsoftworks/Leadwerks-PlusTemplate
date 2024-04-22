@@ -525,6 +525,9 @@ void SampleUI::ShowMenuPanel(const bool ingame)
 	ShowStats(stats.GetInt());
 
 	menushown = true;
+
+	// If the menu panel is shown, enforce the global action set.
+	Input::SetActionSet("");
 }
 
 void SampleUI::HideMenuPanel()

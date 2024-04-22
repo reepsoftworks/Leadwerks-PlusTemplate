@@ -108,16 +108,10 @@ namespace App
 		if (!werkfile) return false;
 
 		// Replace the name with the one in the file.
-		Title = werkfile->GetValue("Title");
+		// Title = werkfile->GetValue("Title");
 		AppID = String::UInt64(werkfile->GetValue("AppID"));
 		Author = werkfile->GetValue("Author");
 		Copyright = werkfile->GetValue("Copyright");
-
-		// TODO: Load packages listed.
-		auto packagelist = werkfile->GetValue("Packages");
-		if (!packagelist.is_null())
-		{
-		}
 
 		werkfile->Release();
 		werkfile = NULL;

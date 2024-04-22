@@ -82,7 +82,7 @@ namespace App
 #include "Scene.h"
 #include "SceneActor.h"
 #include "Translator.h"
-//#include "Input.h"
+#include "Input.h"
 
 // Gadgets
 #include "Gadgets/StatsGadget.h"
