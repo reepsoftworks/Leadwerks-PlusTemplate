@@ -24,6 +24,7 @@ namespace App
 
 		bool anybuttonhit;
 		int lastbutton;
+		bool cursormode;
 		std::map<int, bool> buttondownstate;
 		std::map<int, bool> buttonhitstate;
 		std::map<int, bool> buttonreleasedstate;
@@ -49,6 +50,7 @@ namespace App
 		virtual bool ProcessEvent(const Leadwerks::Event& e);
 	public:
 		Leadwerks::Vec4* uibasecolor;
+		std::map<int, std::string> commandbinds;
 
 		GraphicsWindow();
 		virtual ~GraphicsWindow();

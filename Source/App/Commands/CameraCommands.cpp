@@ -96,7 +96,7 @@ void CC_Fov(std::string pArgV)
 	auto setting = String::Float(pArgV);
 	Settings::SetFov(setting);
 }
-static ConVar fov("fov", "70", CVAR_SAVE, "Usage: fov <float (Default = 70)>", CC_Fov);
+ConVar fov("fov", "70", CVAR_SAVE, "Usage: fov <float (Default = 70)>", CC_Fov);
 
 void CC_ShowPhysics(std::string pArgV)
 {

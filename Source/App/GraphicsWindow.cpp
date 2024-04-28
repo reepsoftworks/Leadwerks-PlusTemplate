@@ -94,6 +94,7 @@ namespace App
         buttonreleasedstate.clear();
         anybuttonhit = false;
         lastbutton = 0;
+        cursormode = true;
 	}
 
 	GraphicsWindow::~GraphicsWindow()
@@ -251,6 +252,11 @@ namespace App
             window_ptr->Show();
         }
 
+        if (cursormode)
+            window_ptr->ShowMouse();
+        else
+            window_ptr->HideMouse();
+
         window_ptr->Activate();
 
 #if defined (_WIN32)
@@ -394,6 +400,8 @@ namespace App
 
     void GraphicsWindow::SetCursor(bool cursor)
     {
+        cursormode = cursor;
+
         if (cursor)
             window_ptr->ShowMouse();
         else
@@ -425,7 +433,6 @@ namespace App
     {
         if (window_ptr == NULL) return;
 
-
         if (!buttondownstate[code])
         {
             const bool actually_down = IsVkDown(code);
@@ -434,6 +441,11 @@ namespace App
             buttonreleasedstate[code] = !actually_down;
             anybuttonhit = actually_down;
             if (lastbutton != code) lastbutton = code;
+
+            if (!commandbinds.empty())
+            {
+                ExecuteCommand(commandbinds[code]);
+            }
         }
     }
 
@@ -567,27 +579,31 @@ namespace App
             {
             case WM_LBUTTONDOWN:
                 button = Mouse::Left;
+                EventQueue::Emit(Event::MouseDown, window, button, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
                 break;
             case WM_RBUTTONDOWN:
                 button = Mouse::Right;
+                EventQueue::Emit(Event::MouseDown, window, button, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
                 break;
             case WM_MBUTTONDOWN:
-                button = Mouse::Middle;
+                button = VK_MBUTTON;
+                EventQueue::Emit(Event::MouseDown, window, Mouse::Middle, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
                 break;
             case WM_XBUTTONDOWN:
                 switch (HIWORD(wparam))
                 {
                 case XBUTTON1:
-                    button = Mouse::Forward;
+                    button = VK_XBUTTON1;
+                    EventQueue::Emit(Event::MouseDown, window, Mouse::Forward, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
                     break;
                 case XBUTTON2:
-                    button = Mouse::Back;
+                    button = XBUTTON2;
+                    EventQueue::Emit(Event::MouseDown, window, Mouse::Back, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
                     break;
                 }
                 break;
             }
             window->PumpButtonCodeDown(button);
-            EventQueue::Emit(Event::MouseDown, window, button, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             break;
         }
         case WM_LBUTTONUP:

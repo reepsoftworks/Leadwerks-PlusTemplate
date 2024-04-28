@@ -92,13 +92,29 @@ static ConCommand load("load", CC_Load, CVAR_DEFAULT, "Usage: load <filepath>");
 
 void CC_Pause(std::vector<std::string> pArgV)
 {
-	Time::Pause();
+	auto scene = Scene::GetCurrent();
+	if (scene)
+	{
+		scene->SetPauseState(true);
+	}
+	else
+	{
+		Time::Pause();
+	}
 }
 static ConCommand pausecommand("pause", CC_Pause, CVAR_DEFAULT, "Usage: pause");
 
 void CC_UnPause(std::vector<std::string> pArgV)
 {
-	Time::Resume();
+	auto scene = Scene::GetCurrent();
+	if (scene)
+	{
+		scene->SetPauseState(false);
+	}
+	else
+	{
+		Time::Resume();
+	}
 }
 static ConCommand unpausecommand("unpause", CC_UnPause, CVAR_DEFAULT, "Usage: unpause");
 

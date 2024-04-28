@@ -4,7 +4,9 @@
 #include "../Input/ButtonCode.h"
 #include "../Input/InputDevice.h"
 
-// https://www.unknowncheats.me/forum/c-and-c-/495094-simple-custom-imgui-hotkey-keybind.html
+extern Leadwerks::ConVar mousesmoothing;
+extern Leadwerks::ConVar mousesensitivity;
+extern Leadwerks::ConVar mouseinvert;
 
 namespace App
 {
@@ -34,6 +36,10 @@ namespace App
 		fov = Settings::GetFov();
 		hdr = Settings::GetHDR();
 
+		m_mousesmoothing = mousesmoothing.GetFloat();
+		m_mousesensitivity = mousesensitivity.GetFloat();
+		m_mouseinvert = mouseinvert.GetBool();
+
 		item_current_display = OS::FindDisplayOption(GetCurrentResolution());
 
 		window_opened = false;
@@ -47,17 +53,6 @@ namespace App
 
 	void SettingsGadget::Apply()
 	{
-		/*
-		Settings::SetMSAA(msaa);
-		Settings::SetLightQuality(light);
-		Settings::SetShadowQuality(shadow);
-		Settings::SetTessellationQuality(tessellation);
-		Settings::SetTerrainQuality(terrain);
-		Settings::SetWaterQuality(water);
-		Settings::SetFov(fov);
-		Settings::SetHDR(hdr);
-		*/
-
 		// Push settings as convars.
 		// The convar will apply the setting for us.
 		SetConVar("r_msaa", String(msaa));
@@ -69,6 +64,10 @@ namespace App
 		SetConVar("fov", String(fov));
 		SetConVar("r_hdr", String(hdr));
 
+		SetConVar("mousesmoothing", String(m_mousesmoothing));
+		SetConVar("mousesensitivity", String(m_mousesensitivity));
+		SetConVar("mouseinvert", String(m_mouseinvert));
+
 		// Update window settings
 		auto window = GraphicsWindow::GetCurrent();
 
@@ -78,6 +77,9 @@ namespace App
 		currentwindowsettings.size.y = String::Int(vec2[1]);
 
 		if (window) window->Resize(currentwindowsettings);
+
+		// Save input.
+		Input::SaveBindings();
 
 		// Ensure settings are synced!
 		Reset();
@@ -115,14 +117,13 @@ namespace App
 		return ret;
 	}
 
-	
 	void ButtonAssignment(const char* action, InputSystem::ButtonCode data, InputSystem::InputDevice* device, const std::string& setname = "")
 	{
 		//static bool waitingforkey = false;
 		static std::map<std::string, bool> waitingforkey;
 		if (waitingforkey[action] == false)
 		{
-			if (ImGui::Button(InputSystem::ButtonCodeToString(data).c_str(), ImVec2(80, 20)))
+			if (ImGui::Button(InputSystem::ButtonCodeToString(data).c_str(), ImVec2(120, 20)))
 			{
 				device->Suspend(true);
 				waitingforkey[action] = true;
@@ -131,7 +132,7 @@ namespace App
 		}
 		else if (waitingforkey[action] == true)
 		{
-			ImGui::Button("...", ImVec2(80, 20));
+			ImGui::Button("...", ImVec2(120, 20));
 
 			if (GraphicsWindow::GetCurrent()->ButtonAnyHit())
 			{
@@ -161,14 +162,14 @@ namespace App
 		}
 		else
 		{
-			auto data = device->GetActionData(action, setname).btnaxis;
-			ButtonAssignment(action, data.up, device, setname);
-			ImGui::SameLine();
-			ButtonAssignment(action, data.down, device, setname);
-			ImGui::SameLine();
-			ButtonAssignment(action, data.left, device, setname);
-			ImGui::SameLine();
-			ButtonAssignment(action, data.right, device, setname);
+			//auto data = device->GetActionData(action, setname).btnaxis;
+			//ButtonAssignment(action, data.up, device, setname);
+			//ImGui::SameLine();
+			//ButtonAssignment(action, data.down, device, setname);
+			//ImGui::SameLine();
+			//ButtonAssignment(action, data.left, device, setname);
+			//ImGui::SameLine();
+			//ButtonAssignment(action, data.right, device, setname);
 		}
 	}
 
@@ -391,6 +392,9 @@ namespace App
 				{
 					auto device = Input::GetDevice();
 
+					ImGui::Text("Globals");
+					ImGui::Separator();
+
 					DrawButtonAssignment("Pause", device);
 					DrawButtonAssignment("Console", device);
 					DrawButtonAssignment("Screenshot", device);
@@ -398,14 +402,21 @@ namespace App
 					ImGui::Text("InGameControls");
 					ImGui::Separator();
 
+					DrawButtonAssignment("MoveForward", device, "InGameControls");
+					DrawButtonAssignment("MoveBackward", device, "InGameControls");
+					DrawButtonAssignment("MoveLeft", device, "InGameControls");
+					DrawButtonAssignment("MoveRight", device, "InGameControls");
 					DrawButtonAssignment("Crouch", device, "InGameControls");
 					DrawButtonAssignment("Jump", device, "InGameControls");
-					DrawButtonAssignment("QuickSpin", device, "InGameControls");
-					DrawButtonAssignment("Use", device, "InGameControls");
-					DrawButtonAssignment("ZoomIn", device, "InGameControls");
-					DrawButtonAssignment("ZoomOut", device, "InGameControls");
 
-					//DrawButtonAssignment("Movement", device, "InGameControls");
+					ImGui::EndTabItem();
+				}
+
+				if (ImGui::BeginTabItem("Mouse"))
+				{
+					ImGui::SliderFloat("Smoothing", &m_mousesmoothing, 0.0f, 10.0f, "%.0f", 0);
+					ImGui::SliderFloat("Sensitivity", &m_mousesensitivity, 0.0f, 10.0f, "%.0f", 0);
+					ImGui::Checkbox("Invert Mouse", &m_mouseinvert);
 
 					ImGui::EndTabItem();
 				}
@@ -424,214 +435,10 @@ namespace App
 			ImGui::EndChild();
 		}
 
-
-		/*
-		const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-		if (ImGui::BeginChild("SettingsGraphicsRegion", ImVec2(0, -footer_height_to_reserve), true, ImGuiWindowFlags_None | ImGuiWindowFlags_NoSavedSettings))
-		{
-			ImGui::SetNextItemOpen(true);
-			if (ImGui::TreeNode("Display"))
-			{
-				// Resolution
-				static int item_current_display = OS::FindDisplayOption(GetCurrentResolution());
-				std::string combo_preview_displayvalue = resolutions[item_current_display];
-				if (ImGui::BeginCombo("Resolution", combo_preview_displayvalue.c_str()))
-				{
-					for (const auto& p : resolutions)
-					{
-						const bool is_selected = (item_current_display == OS::FindDisplayOption(p));
-						if (ImGui::Selectable(p.c_str(), is_selected))
-						{
-							item_current_display = OS::FindDisplayOption(p);
-						}
-
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				if (item_current_display != OS::FindDisplayOption(String(currentwindowsettings.size.x) + "x" + String(currentwindowsettings.size.y)))
-				{
-					std::string s = OS::GetDisplayString(item_current_display);
-					auto vec2 = String::Split(s, "x");
-					currentwindowsettings.size = iVec2(String::Int(vec2[0]), String::Int(vec2[1]));
-				}
-
-				// Window Mode
-				static int item_current_mode = GetCurrentWindowMode();
-				std::string combo_preview_modevalue;
-				switch (item_current_mode)
-				{
-				case GRAPHICSWINDOW_TITLEBAR:
-					combo_preview_modevalue = "Windowed";
-					break;
-
-				case GRAPHICSWINDOW_BORDERLESS:
-					combo_preview_modevalue = "Borderless Window";
-					break;
-
-				case GRAPHICSWINDOW_FULLSCREEN:
-					combo_preview_modevalue = "Fullscreen";
-					break;
-
-				case GRAPHICSWINDOW_FULLSCREENNATIVE:
-					combo_preview_modevalue = "Native Fullscreen";
-					break;
-
-				case GRAPHICSWINDOW_FULLSCREENBORDERLESS:
-					combo_preview_modevalue = "Fullscreen Borderless Window";
-					break;
-				}
-
-				const char* modeitems[] = { "Windowed", "Borderless Window", "Fullscreen", "Native Fullscreen", "Fullscreen Borderless Window" };
-				if (ImGui::BeginCombo("Window Mode", combo_preview_modevalue.c_str()))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(modeitems); n++)
-					{
-						const bool is_selected = (item_current_mode == n);
-						if (ImGui::Selectable(modeitems[n], is_selected))
-							item_current_mode = n;
-
-						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				if (item_current_mode != currentwindowsettings.style) currentwindowsettings.style = (GraphicWindowStyles)item_current_mode;
-
-				ImGui::TreePop();
-			}
-
-			// Graphics
-			ImGui::SetNextItemOpen(true);
-			if (ImGui::TreeNode("Graphics"))
-			{
-				std::string combo_preview = Settings::GetSettingString(msaa);
-				if (ImGui::BeginCombo("Multisampling", combo_preview.c_str()))
-				{
-					const char* msaaitems[] = { "Low", "Medium", "High" };
-					for (int n = 0; n < IM_ARRAYSIZE(msaaitems); n++)
-					{
-						const bool is_selected = (msaa == (Setting)n);
-						if (ImGui::Selectable(msaaitems[n], is_selected))
-							msaa = (Setting)n;
-
-						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				// Lights
-				const char* graphicitems[] = { "Low", "Medium", "High" };
-				combo_preview = Settings::GetSettingString(light);
-				if (ImGui::BeginCombo("Light Quality", combo_preview.c_str()))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(graphicitems); n++)
-					{
-						const bool is_selected = (light == (Setting)n);
-						if (ImGui::Selectable(graphicitems[n], is_selected))
-							light = (Setting)n;
-
-						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				// Shadows
-				combo_preview = Settings::GetSettingString(shadow);
-				if (ImGui::BeginCombo("Shadow Quality", combo_preview.c_str()))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(graphicitems); n++)
-					{
-						const bool is_selected = (shadow == (Setting)n);
-						if (ImGui::Selectable(graphicitems[n], is_selected))
-							shadow = (Setting)n;
-
-						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				// Tessellation
-				combo_preview = Settings::GetSettingString(tessellation);
-				if (ImGui::BeginCombo("Tessellation Quality", combo_preview.c_str()))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(graphicitems); n++)
-					{
-						const bool is_selected = (tessellation == (Setting)n);
-						if (ImGui::Selectable(graphicitems[n], is_selected))
-							tessellation = (Setting)n;
-
-						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				// Terrain
-				combo_preview = Settings::GetSettingString(terrain);
-				if (ImGui::BeginCombo("Terrain Quality", combo_preview.c_str()))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(graphicitems); n++)
-					{
-						const bool is_selected = (terrain == (Setting)n);
-						if (ImGui::Selectable(graphicitems[n], is_selected))
-							terrain = (Setting)n;
-
-						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				// Water
-				combo_preview = Settings::GetSettingString(water);
-				if (ImGui::BeginCombo("Water Quality", combo_preview.c_str()))
-				{
-					for (int n = 0; n < IM_ARRAYSIZE(graphicitems); n++)
-					{
-						const bool is_selected = (water == (Setting)n);
-						if (ImGui::Selectable(graphicitems[n], is_selected))
-							water = (Setting)n;
-
-						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::EndCombo();
-				}
-
-				ImGui::TreePop();
-			}
-
-			// Camera
-			ImGui::SetNextItemOpen(true);
-			if (ImGui::TreeNode("Camera"))
-			{
-				ImGui::SliderFloat("Field of View (FOV)", &fov, 50.0f, 90.0f, "%.0f", 0);
-				ImGui::Checkbox("HDR", &hdr);
-
-				ImGui::TreePop();
-			}
-			ImGui::EndChild();
-		}
-		*/
-
 		ImVec2 buttonSize(80, 0);
 		float widthNeeded = buttonSize.x + ImGui::GetStyle().ItemSpacing.x;
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - widthNeeded);
-		bool apply = ImGui::Button("Apply", buttonSize);
+		bool apply = ImGui::Button("OK", buttonSize);
 		if (apply)
 		{
 			Apply();

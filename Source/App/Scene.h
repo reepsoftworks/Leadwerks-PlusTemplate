@@ -31,7 +31,6 @@ namespace App
 		bool cleartoload;
 		bool isloading;
 
-		
 		static bool EventCallback(const Leadwerks::Event& e, Leadwerks::Object* extra);
 		void PostLoadModifications();
 

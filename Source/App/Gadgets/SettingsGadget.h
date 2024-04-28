@@ -24,6 +24,11 @@ namespace App
 		float fov;
 		bool hdr;
 
+		// Mouse Settings
+		float m_mousesmoothing;
+		float m_mousesensitivity;
+		bool m_mouseinvert;
+
 		void Apply();
 		void Reset();
 

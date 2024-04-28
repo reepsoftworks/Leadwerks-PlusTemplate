@@ -11,7 +11,6 @@ extern ConVar screenheight;
 // TODO: move to user app directory...
 #define USER_CONFIG "Config/config.cfg"
 #define USER_CONFIGEDITOR "Config/config_editor.cfg"
-
 #define PATH_SPLASH L"UI/splash.bmp"
 
 SampleApp::SampleApp()
@@ -19,7 +18,6 @@ SampleApp::SampleApp()
 	splashwindow = NULL;
 	window = NULL;
 	scene = NULL;
-
 	ui = NULL;
 }
 
@@ -96,6 +94,8 @@ bool SampleApp::Start()
 	// Create our UI.
 	ui = SampleUI::Create(window);
 
+	Input::Initalize();
+
 	return true;
 }
 
@@ -156,9 +156,9 @@ bool SampleApp::Update()
 			EmitEvent(Event::Quit);
 		}
 
-		if (Input::ActionHit("Jump"))
+		if (window->ButtonHit(Key::Shift))
 		{
-			Print("Jump");
+			Print("Hit");
 		}
 	}
 

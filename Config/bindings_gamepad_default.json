@@ -1,0 +1,16 @@
+{
+	"InGameControls":
+	{
+		"Crouch": 525,
+		"Jump": 524,
+		"QuickSpin": 520,
+		"Use": 526,
+		"ZoomToggle": 521,
+		"axes":
+		{
+			"Camera": 10,
+			"Movement": 11
+		}
+	},
+	"Pause": 516
+}

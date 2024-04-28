@@ -52,6 +52,7 @@ namespace App
 		mapdata = {};
 		cleartoload = false;
 		isloading = true;
+		timepausestate = false;
 	}
 
 	Scene::~Scene()

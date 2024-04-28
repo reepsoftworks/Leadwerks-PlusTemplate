@@ -536,7 +536,13 @@ void SampleUI::HideMenuPanel()
 
 	menupanel->Hide();
 
-	if (curtain->GetHidden()) curtain->Hide();
+	if (curtain->GetHidden() || this->ingame) curtain->Hide();
+
+	// Close all widgets!
+	if (this->ingame)
+	{
+		ForceHidePanels();
+	}
 
 	menushown = false;
 }

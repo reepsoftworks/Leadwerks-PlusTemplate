@@ -1,0 +1,28 @@
+{
+	"Console": 112,
+	"Fullscreen": 122,
+	"mousecursor": 1,
+	"InGameControls":
+	{
+		"Crouch": 17,
+		"Jump": 32,
+		"QuickSpin": 81,
+		"Use": 69,
+		"ZoomIn": 257,
+		"ZoomOut": 258,
+		"axes":
+		{
+			"Camera": 0
+		},
+		"MoveForward": 87,
+		"MoveBackward": 83,
+		"MoveLeft": 65,
+		"MoveRight": 68,
+		"mousecursor": 0
+	},
+	"Pause": 27,
+	"Quick Load": 117,
+	"Quick Save": 116,
+	"Screenshot": 113,
+	"Terminate": 35
+}
