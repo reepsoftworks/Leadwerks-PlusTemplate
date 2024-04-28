@@ -116,7 +116,7 @@ namespace App
 	}
 
 	
-	void ButtonAssignment(const char* action, InputSystem::ButtonCode data, InputSystem::InputDevice* device)
+	void ButtonAssignment(const char* action, InputSystem::ButtonCode data, InputSystem::InputDevice* device, const std::string& setname = "")
 	{
 		//static bool waitingforkey = false;
 		static std::map<std::string, bool> waitingforkey;
@@ -138,7 +138,7 @@ namespace App
 				auto key = GraphicsWindow::GetCurrent()->LastButtonPressed();
 				if (key > InputSystem::BUTTON_NONE)
 				{
-					device->SetAction(action, (InputSystem::ButtonCode)key);
+					device->SetAction(action, (InputSystem::ButtonCode)key, setname);
 					waitingforkey[action] = false;
 					GraphicsWindow::GetCurrent()->Flush();
 					device->Suspend(false);
@@ -157,18 +157,18 @@ namespace App
 		if (!device->GetActionData(action, setname).buttons.empty())
 		{
 			auto data = device->GetActionData(action, setname).buttons[0];
-			ButtonAssignment(action, data, device);
+			ButtonAssignment(action, data, device, setname);
 		}
 		else
 		{
 			auto data = device->GetActionData(action, setname).btnaxis;
-			ButtonAssignment(action, data.up, device);
+			ButtonAssignment(action, data.up, device, setname);
 			ImGui::SameLine();
-			ButtonAssignment(action, data.down, device);
+			ButtonAssignment(action, data.down, device, setname);
 			ImGui::SameLine();
-			ButtonAssignment(action, data.left, device);
+			ButtonAssignment(action, data.left, device, setname);
 			ImGui::SameLine();
-			ButtonAssignment(action, data.right, device);
+			ButtonAssignment(action, data.right, device, setname);
 		}
 	}
 

@@ -92,6 +92,8 @@ namespace App
         buttondownstate.clear();
         buttonhitstate.clear();
         buttonreleasedstate.clear();
+        anybuttonhit = false;
+        lastbutton = 0;
 	}
 
 	GraphicsWindow::~GraphicsWindow()
@@ -328,13 +330,14 @@ namespace App
 
     bool GraphicsWindow::ButtonHit(const int code)
     {
-        const bool is_button_down = buttonhitstate[code];
+        const bool is_button_down = buttonhitstate[code]; //window_ptr->KeyHit(code); //
         buttonhitstate[code] = false;
         return is_button_down;
     }
 
     bool GraphicsWindow::ButtonDown(const int code)
     {
+        //return window_ptr->KeyDown(code);
         return buttondownstate[code];
     }
 
@@ -410,36 +413,41 @@ namespace App
         }
     }
 
+#if defined (_WIN32)
+    // This fixes some keys not calling the WM_SYSKEYUP event. 
+    static bool IsVkDown(int vk)
+    {
+        return (::GetKeyState(vk) & 0x8000) != 0;
+    }
+#endif
+
     void GraphicsWindow::PumpButtonCodeDown(const int code)
     {
         if (window_ptr == NULL) return;
 
-        bool actually_down = false;
-        if (code < InputSystem::BUTTON_FIRST_KEY)
-            actually_down = window_ptr->MouseDown(code);
-        else
-            actually_down = window_ptr->KeyDown(code);
 
-        buttondownstate[code] = actually_down;
-        buttonhitstate[code] = actually_down;
-        buttonreleasedstate[code] = !actually_down;
-        anybuttonhit = actually_down;
-        if (lastbutton != code) lastbutton = code;
+        if (!buttondownstate[code])
+        {
+            const bool actually_down = IsVkDown(code);
+            buttondownstate[code] = actually_down;
+            buttonhitstate[code] = actually_down;
+            buttonreleasedstate[code] = !actually_down;
+            anybuttonhit = actually_down;
+            if (lastbutton != code) lastbutton = code;
+        }
     }
 
     void GraphicsWindow::PumpButtonCodeUp(const int code)
     {
         if (window_ptr == NULL) return;
 
-        bool actually_up = false;
-        if (code < InputSystem::BUTTON_FIRST_KEY)
-            actually_up = window_ptr->MouseDown(code);
-        else
-            actually_up = window_ptr->KeyDown(code);
-
-        buttondownstate[code] = actually_up;
-        buttonhitstate[code] = actually_up;
-        anybuttonhit = actually_up;
+        if (buttondownstate[code])
+        {
+            const bool actually_up = IsVkDown(code);
+            buttondownstate[code] = actually_up;
+            buttonhitstate[code] = actually_up;
+            anybuttonhit = actually_up;
+        }
     }
 
     void GraphicsWindow::PumpMouseWheelDir(const int dir)
