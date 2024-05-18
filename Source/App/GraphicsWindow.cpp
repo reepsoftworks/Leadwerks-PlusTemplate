@@ -163,6 +163,7 @@ namespace App
 
         int window_style = Leadwerks::Window::Titlebar | Leadwerks::Window::Center | Leadwerks::Window::Hidden;
         iVec2 final_windowsize = currentsettings.size;
+        bool fullscreen = false;
         switch (settings.style)
         {
         case GRAPHICSWINDOW_TITLEBAR:
@@ -175,12 +176,14 @@ namespace App
 
         case GRAPHICSWINDOW_FULLSCREEN:
             window_style = Leadwerks::Window::FullScreen | Leadwerks::Window::Center | Leadwerks::Window::Hidden;
+            fullscreen = true;
             break;
 
         case GRAPHICSWINDOW_FULLSCREENNATIVE:
             final_windowsize.x = OS::GetDisplaySize().x;
             final_windowsize.y = OS::GetDisplaySize().y;
             window_style = Leadwerks::Window::FullScreen | Leadwerks::Window::Center | Leadwerks::Window::Hidden;
+            fullscreen = true;
             break;
 
         case GRAPHICSWINDOW_FULLSCREENBORDERLESS:
@@ -257,8 +260,6 @@ namespace App
         else
             window_ptr->HideMouse();
 
-        window_ptr->Activate();
-
 #if defined (_WIN32)
         RAWINPUTDEVICE Rid[1];
         Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
@@ -273,10 +274,14 @@ namespace App
 
         // Replace the engine's proc with ours.
         WNDPROC OldProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(current->window_ptr->GetHandle(), GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(GfxWndProc)));
+
+        if (fullscreen) SetWindowPos(window_ptr->hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 #endif
 
         // Send this event with the size of the framebuffer.
         EmitEvent(Event::WindowSize, window_ptr, 0, 0, 0, framebuffer->GetWidth(), framebuffer->GetHeight(), this);
+
+        window_ptr->Activate();
 
         return true;
     }
@@ -285,6 +290,7 @@ namespace App
     {
         if (window_ptr)
         {
+            Window::current = window_ptr;
             window_ptr->Activate();
             window_ptr->Update();
 

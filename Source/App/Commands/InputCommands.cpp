@@ -4,9 +4,9 @@
 
 using namespace Leadwerks;
 
-ConVar mousesmoothing("mousesmoothing", "0", CVAR_SAVE, "Usage: mousesmoothing <float>");
-ConVar mousesensitivity("mousesensitivity", "1.0", CVAR_SAVE, "Usage: mousesensitivity <float>");
-ConVar mouseinvert("mouseinvert", "0", CVAR_SAVE, "Usage: mouseinvert <bool>");
+//ConVar mousesmoothing("mousesmoothing", "0", CVAR_SAVE, "Usage: mousesmoothing <float>");
+//ConVar mousesensitivity("mousesensitivity", "1.0", CVAR_SAVE, "Usage: mousesensitivity <float>");
+//ConVar mouseinvert("mouseinvert", "0", CVAR_SAVE, "Usage: mouseinvert <bool>");
 
 void CC_Bind(std::vector<std::string> pArgV)
 {

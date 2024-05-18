@@ -588,6 +588,10 @@ void SampleUI::RefreshMenu(const iVec2& sz)
 	{
 		curtain->Show();
 	}
+	else if (menupanel->GetHidden())
+	{
+		curtain->Hide();
+	}
 
 	// Hide/Disable if any other gadgets are on the screen.
 	// TODO: Dim or put a gradient effect over the buttons.
@@ -654,11 +658,6 @@ bool SampleUI::ProcessEvent(const Event& e)
 		auto scene = Scene::GetCurrent();
 		if (scene)
 		{
-			if (Scene::GetCurrent()->InMap())
-			{
-				//Time::Pause();
-			}
-
 			// This is a dumb hack to fix widgetsopened being the max int value when set to 0 for some reason.
 			if (widgetsopened > 1000) widgetsopened = 0;
 
@@ -676,18 +675,20 @@ bool SampleUI::ProcessEvent(const Event& e)
 			if (menupanel->GetHidden()) menupanel->Show();
 		}
 
-		auto scene = Scene::GetCurrent();
-		if (scene)
-		{
-			if (Scene::GetCurrent()->InMap())
-			{
-			}	
-		}
-
 		widgetsopened--;
 		if (!timepausestate)
 		{
-			if (widgetsopened == 0 && !ingame) curtain->FadeOut();
+			if (ingame)
+			{
+				if (widgetsopened == 0 && menupanel->GetHidden())
+				{
+					curtain->FadeOut();
+				}
+			}
+			else
+			{
+				if (widgetsopened == 0) curtain->FadeOut();
+			}
 		}
 	}
 
@@ -696,9 +697,12 @@ bool SampleUI::ProcessEvent(const Event& e)
 
 void SampleUI::ForceHidePanels()
 {
+	// TODO: Maybe store a bool array to keep track of what was 
+	// opened before being forced hidden??
 	if (maplistgadget) maplistgadget->Hide();
 	if (settinggadget) settinggadget->Hide();
 	if (quitconfirmgadget) quitconfirmgadget->Hide();
+	if (console) console->Hide();
 	widgetsopened = 0;
 }
 

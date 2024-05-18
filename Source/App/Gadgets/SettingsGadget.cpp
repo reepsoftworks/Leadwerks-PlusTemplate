@@ -101,8 +101,7 @@ namespace App
 	{
 		shown = false;
 		if (window_opened) EmitEvent(Event::WidgetClose, this);
-		window_opened = false;
-		
+		window_opened = false;	
 	}
 
 	GraphicWindowStyles SettingsGadget::GetCurrentWindowMode()

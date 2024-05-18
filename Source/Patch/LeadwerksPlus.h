@@ -89,7 +89,7 @@ typedef string exposed_string;
 typedef Leadwerks::Vec2 exposed_vec2;
 typedef Leadwerks::Vec3 exposed_vec3;
 typedef Leadwerks::Vec4 exposed_vec4;
-typedef Leadwerks::Entity exposed_entity;
+typedef Leadwerks::Entity* exposed_entity;
 typedef void exposed_input;
 typedef void exposed_output;
 

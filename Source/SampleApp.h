@@ -8,8 +8,6 @@ class SampleApp
 	Leadwerks::SplashWindow* splashwindow;
 	App::GraphicsWindow* window;
 	App::Scene* scene;
-
-	
 	SampleUI* ui;
 
 	void Shutdown();
@@ -21,3 +19,4 @@ public:
 	bool Start();
 	bool Update();
 };
+

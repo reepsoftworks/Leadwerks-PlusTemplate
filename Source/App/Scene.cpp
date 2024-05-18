@@ -53,6 +53,7 @@ namespace App
 		cleartoload = false;
 		isloading = true;
 		timepausestate = false;
+		gravity = 0;
 	}
 
 	Scene::~Scene()
@@ -150,6 +151,9 @@ namespace App
 				mapdata.filetime = FileSystem::GetFileTime(Scene::nextmaptoload);
 				Scene::nextmaptoload.clear();
 
+				// Apply gravity
+				if (gravity > 0) world->SetGravity(0, -gravity, 0);
+
 				PostLoadModifications();
 
 				// Show UI Gadgets
@@ -210,6 +214,11 @@ namespace App
 	bool Scene::GetPauseState()
 	{
 		return PauseState();
+	}
+
+	void Scene::SetGravity(const float value)
+	{
+		gravity = value;
 	}
 
 	void Scene::Clear()
@@ -598,8 +607,7 @@ namespace App
 					t["entites"][name]["actor"]["class"] = p->GetString("actor");
 
 					// FIXME!
-					t["entites"][name]["actor"]["data"] = nlohmann::json::object();
-					sceneactor->Save(t["entites"][name]["actor"]["data"]);
+					t["entites"][name]["actor"]["data"] = sceneactor->Save();
 				}
 			}
 		}

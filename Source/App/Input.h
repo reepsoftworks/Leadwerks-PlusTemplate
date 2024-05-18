@@ -1,8 +1,5 @@
 #pragma once
 #include "App.h"
-
-//#include "Input/ButtonCode.h"
-//#include "Input/Glyphs.h"
 #include "Input/InputDevice.h"
 
 namespace App
@@ -19,9 +16,8 @@ namespace App
 		static void Rumble(int duration = 120, const float left = 0.5f, const float right = 0.5f);
 
 		static InputSystem::InputDevice* GetDevice(const int id = 0);
+		static int GetDeviceID();
 		static std::string GetActionSet();
-
-		
 
 		static void SaveBindings();
 	};

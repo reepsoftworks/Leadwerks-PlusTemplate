@@ -30,6 +30,7 @@ namespace App
 		Leadwerks::Timer* delayload;
 		bool cleartoload;
 		bool isloading;
+		float gravity;
 
 		static bool EventCallback(const Leadwerks::Event& e, Leadwerks::Object* extra);
 		void PostLoadModifications();
@@ -43,6 +44,7 @@ namespace App
 		float GetSpeed();//lua
 		void SetPauseState(const bool pause);//lua
 		bool GetPauseState();//lua
+		void SetGravity(const float value);//lua
 
 		void Clear();//lua
 		void LoadMap(std::string& path);//lua

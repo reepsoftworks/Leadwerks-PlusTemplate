@@ -54,7 +54,7 @@ bool SampleApp::Start()
 
 	// Gather the launching window settings.
 	GraphicWindowSettings windowsettings = GraphicWindowSettings();
-	const bool editormode = (bool)(Program::GetAppMode() == Program::EditorMode);
+	const bool editormode = (bool)(Program::GetAppMode() > Program::NormalMode);
 	if (!editormode)
 	{
 		windowsettings.size.x = screenwidth.GetInt();
@@ -68,7 +68,9 @@ bool SampleApp::Start()
 		if (config != NULL)
 		{
 			windowsettings.size.x = String::Int(config->GetValue("screenwidth"));
+			if (windowsettings.size.x <= 0) windowsettings.size.x = 1280;
 			windowsettings.size.y = String::Int(config->GetValue("screenheight"));
+			if (windowsettings.size.y <= 0) windowsettings.size.y = 720;
 			windowsettings.style = (GraphicWindowStyles)String::Int(config->GetValue("windowmode"));
 			config->Release();
 			config = NULL;
@@ -90,6 +92,9 @@ bool SampleApp::Start()
 		OS::MessageError("Error", "Failed to create scene!");
 		return false;
 	}
+
+	// Apply a global gravity to all maps.
+	scene->SetGravity(18);
 
 	// Create our UI.
 	ui = SampleUI::Create(window);
@@ -113,24 +118,18 @@ bool SampleApp::Update()
 			running = false;
 			break;
 		}
-		else if (e.id == EVENT_DEVICESTATE)
-		{
-
-		}
 	}
 
 	// Allow special features for debug/devmode.
 	auto appmode = Program::GetAppMode();
 	if (appmode > Program::NormalMode)
 	{
-		//if (window->ButtonHit(Key::F1)) // TODO: Replace me with the input system.
 		if (Input::ActionHit("Console"))
 		{
-			ui->ToggleConsole();
+			if (ui) ui->ToggleConsole();
 		}
 	
 		// Fullscreen toggle.
-		//if (window->ButtonHit(Key::F11)) // TODO: Replace me with the input system.
 		if (Input::ActionHit("Fullscreen"))
 		{
 			bool fullscreen = false;
@@ -150,15 +149,9 @@ bool SampleApp::Update()
 		}
 
 		// Terminate
-		//if (window->ButtonHit(Key::End)) // TODO: Replace me with the input system.
 		if (Input::ActionHit("Terminate"))
 		{
 			EmitEvent(Event::Quit);
-		}
-
-		if (window->ButtonHit(Key::Shift))
-		{
-			Print("Hit");
 		}
 	}
 

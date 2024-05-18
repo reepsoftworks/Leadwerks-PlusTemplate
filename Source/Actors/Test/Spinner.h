@@ -15,7 +15,7 @@ public:
 	virtual void ReceiveSignal(const std::string& inputname, Leadwerks::Entity* sender);
 
 	virtual void Load(nlohmann::json properties = NULL);
-	virtual void Save(nlohmann::json properties = NULL);
+	virtual nlohmann::json Save();
 
 	exposed_input Enable(Leadwerks::Entity* sender);
 	exposed_input Disable(Leadwerks::Entity* sender);

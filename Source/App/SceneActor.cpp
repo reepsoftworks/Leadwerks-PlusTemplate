@@ -185,6 +185,13 @@ namespace App
 	{
 		auto elem = CastObject<SceneActor>(extra);
 		if (elem == NULL) return false;
+
+		// Instead of checking each frame for input, we'll listen for the keydown event.
+		if (e.id == Event::KeyDown || e.id == Event::MouseDown || e.id == Event::MouseWheel)
+		{
+			elem->UpdateInput();
+		}
+
 		return elem->ProcessEvent(e);
 	}
 

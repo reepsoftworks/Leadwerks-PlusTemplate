@@ -99,6 +99,7 @@ namespace App
 		if (Title.empty()) Title = "Leadwerks";
 		return Title;
 	}
+
 	bool Program::LoadWerkFile()
 	{
 		if (Leadwerks::System::AppName.empty()) return false;

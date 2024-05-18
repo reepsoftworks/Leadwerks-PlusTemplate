@@ -39,9 +39,10 @@ namespace App
 		Leadwerks::Entity* GetEntity();
 		virtual void FireOutput(const std::string& eventname);
 		virtual bool Use(Leadwerks::Entity* source, Leadwerks::Object* extra) { return false; };
+		virtual void UpdateInput() {};
 
 		virtual void Load(nlohmann::json properties = NULL) {};
-		virtual void Save(nlohmann::json properties = NULL) {};
+		virtual nlohmann::json Save() { return NULL; };
 
 		friend class Scene;
 	};

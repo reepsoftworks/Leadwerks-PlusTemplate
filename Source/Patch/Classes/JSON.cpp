@@ -219,8 +219,13 @@ namespace Leadwerks
 
     bool Table::Save(table& t, const std::string& path)
     {
-        nlohmann::json j3 = t.to_json();
-        return JSON::Save(j3, path);
+        std::string s = t.to_json();
+        auto stream = FileSystem::WriteFile(path);
+        if (stream == NULL) return false;
+        stream->WriteLine(s);
+        stream->Release();
+        stream = NULL;
+        return true;
     }
 
     table Table::Load(const std::wstring& path)
@@ -239,8 +244,13 @@ namespace Leadwerks
 
     bool Table::Save(table& t, const std::wstring& path)
     {
-        nlohmann::json j3 = t.to_json();
-        return JSON::Save(j3, path);
+        std::string s = t.to_json();
+        auto stream = FileStream::WriteFile(path);
+        if (stream == NULL) return false;
+        stream->WriteLine(s);
+        stream->Release();
+        stream = NULL;
+        return true;
     }
 #endif
 }

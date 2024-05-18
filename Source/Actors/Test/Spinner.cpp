@@ -36,13 +36,15 @@ void Spinner::Load(nlohmann::json properties)
 	}
 }
 
-void Spinner::Save(nlohmann::json properties)
+nlohmann::json Spinner::Save()
 {
+	nlohmann::json properties = nlohmann::json::object();
 	properties["enabled"] = enabled;
 	properties["spinspeed"] = nlohmann::json::array();
 	properties["spinspeed"][0] = spinspeed.x;
 	properties["spinspeed"][1] = spinspeed.y;
 	properties["spinspeed"][2] = spinspeed.z;
+	return properties;
 }
 
 exposed_input Spinner::Enable(Entity* sender)

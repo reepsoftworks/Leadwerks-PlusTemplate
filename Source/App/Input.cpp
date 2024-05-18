@@ -62,7 +62,7 @@ namespace App
 	{
 		Initalize();
 		if (device.empty()) return false;
-		auto current_device = device[GetDeviceID()];
+		auto current_device = device[InputSystem::GetDeviceID()];
 		if (current_device == NULL) return false;
 		return current_device->Down(actionname);
 	}
@@ -71,7 +71,7 @@ namespace App
 	{
 		Initalize();
 		if (device.empty()) return false;
-		auto current_device = device[GetDeviceID()];
+		auto current_device = device[InputSystem::GetDeviceID()];
 		if (current_device == NULL) return false;
 		return current_device->Hit(actionname);
 	}
@@ -80,7 +80,7 @@ namespace App
 	{
 		Initalize();
 		if (device.empty()) return Vec2(0,0);
-		auto current_device = device[GetDeviceID()];
+		auto current_device = device[InputSystem::GetDeviceID()];
 		if (current_device == NULL) return Vec2(0, 0);
 		return current_device->Axis(actionname);
 	}
@@ -100,7 +100,7 @@ namespace App
 		Initalize();
 		if (!device.empty())
 		{
-			auto current_device = device[GetDeviceID()];
+			auto current_device = device[InputSystem::GetDeviceID()];
 			if (current_device) current_device->Rumble(left, right, duration);
 		}
 	}
@@ -109,6 +109,12 @@ namespace App
 	{
 		Initalize();
 		return device[id];
+	}
+
+	int Input::GetDeviceID()
+	{
+		Initalize();
+		return InputSystem::GetDeviceID();
 	}
 
 	std::string Input::GetActionSet()
